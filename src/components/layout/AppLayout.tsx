@@ -37,7 +37,7 @@ export function AppLayout({
               <p className="text-sm font-semibold uppercase tracking-[0.14em] text-teal-800">
                 Triad Coverage
               </p>
-              <h1 className="text-lg font-bold text-zinc-950">Guitar Practice Tracker</h1>
+              <h1 className="text-lg font-bold text-zinc-950">Guitar Practice Tool</h1>
             </div>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">

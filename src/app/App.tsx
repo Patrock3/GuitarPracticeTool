@@ -9,6 +9,7 @@ import { ProgressPage } from "../components/progress/ProgressPage";
 import { ProgressionBuilder } from "../components/progression/ProgressionBuilder";
 import { HarmonisedScale } from "../components/workspace/HarmonisedScale";
 import { StringGroupSelector } from "../components/workspace/StringGroupSelector";
+import { WelcomeCard } from "../components/workspace/WelcomeCard";
 import { buildDiatonicScale } from "../features/harmony/diatonicHarmony";
 import type { DiatonicChord } from "../features/harmony/harmonyTypes";
 import type { TriadInversion } from "../data/triads";
@@ -229,6 +230,7 @@ function PracticeWorkspace({
   return (
     <div className="grid gap-4">
       <section className="grid gap-3">
+        <WelcomeCard />
         <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_260px]">
           <HarmonisedScale
             chords={chords}
