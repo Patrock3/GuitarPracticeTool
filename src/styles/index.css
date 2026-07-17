@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color: #1f2933;
+  background: #f6f3ed;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+.fretboard {
+  background-color: #cda878;
+  background-image:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.12), transparent 18%, rgba(92, 57, 29, 0.08) 52%, transparent 78%),
+    repeating-linear-gradient(2deg, rgba(83, 50, 25, 0.035) 0, rgba(83, 50, 25, 0.035) 1px, transparent 1px, transparent 8px),
+    linear-gradient(180deg, #d7b687 0%, #c9a272 48%, #bc9162 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -2px 5px rgba(72, 43, 21, 0.18),
+    0 5px 18px rgba(68, 49, 31, 0.12);
+}
+
+button,
+textarea,
+input {
+  font: inherit;
+}
+
+button:focus-visible,
+textarea:focus-visible,
+input:focus-visible {
+  outline: 3px solid rgba(20, 121, 105, 0.35);
+  outline-offset: 2px;
+}
