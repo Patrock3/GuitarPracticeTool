@@ -8,6 +8,7 @@ import type { FretboardLabelMode } from "./FretboardMarkerLabel";
 import { ScaleFretboardView } from "./ScaleFretboardView";
 import type { VisualisationMode } from "../../features/visualisation/visualisationTypes";
 import type { VisualStringGroup } from "../../data/stringSets";
+import { fretboardFretCount } from "./fretboardLayout";
 
 interface CombinedTriadFretboardProps {
   shapes: TriadShape[];
@@ -65,6 +66,7 @@ export function CombinedTriadFretboard({ progression = [], renderMode = "triads"
           labelMode={labelMode}
           notes={scaleNotes}
           root={scaleRoot ?? shapes[0].chord.root}
+          selectedChord={shapes[0].chord}
           stringGroup={scaleStringGroup ?? shapes[0].stringGroup}
         />
       </section>
@@ -83,19 +85,30 @@ export function CombinedTriadFretboard({ progression = [], renderMode = "triads"
   }, new Map());
   const markers: CombinedMarker[] = Array.from(groupedMarkers.values()).flatMap((group) =>
     group.map((marker, stackIndex) => ({ ...marker, stackIndex, stackTotal: group.length })),
-  );
-  const maxFret = Math.max(12, ...markers.map((marker) => marker.fret + 1));
-  const visiblePositionFrets = positionFrets.filter((fret) => fret <= maxFret);
+  ).filter((marker) => marker.fret <= fretboardFretCount);
+  const visiblePositionFrets = positionFrets.filter((fret) => fret <= fretboardFretCount);
 
   return (
     <section className="min-w-0 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-6">
       <div className="mb-7 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
-        <div>
+        <div className="min-w-0 flex-1">
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">Fretboard View</p>
-          <h3 className="mt-1 text-2xl font-black text-zinc-950">
-            {isProgression ? progression.map((item) => item.chord.symbol).join(" → ") : shapes[0].chord.symbol} <span className="font-semibold text-zinc-400">/ strings {shapes[0].stringGroup}</span>
-          </h3>
-          {isProgression ? (
+          <div className="mt-1 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
+            <h3 className="text-2xl font-black text-zinc-950">
+              {isProgression ? progression.map((item) => item.chord.symbol).join(" → ") : shapes[0].chord.symbol} <span className="font-semibold text-zinc-400">/ strings {shapes[0].stringGroup}</span>
+            </h3>
+            {!isProgression && (
+              <div className="flex shrink-0 items-center gap-3" aria-label="Inversion colour legend">
+                {shapes.map((shape) => (
+                  <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500" key={shape.id}>
+                    <span className={`h-2.5 w-2.5 rounded-full ${inversionStyles[shape.inversion].marker}`} aria-hidden="true" />
+                    {inversionStyles[shape.inversion].shortLabel}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+          {isProgression && (
             <div className="mt-3 flex flex-wrap items-center gap-1.5" aria-label="Progression sequence">
               {progression.map((item, index) => {
                 const isFocused = item.id === focusedProgressionId;
@@ -115,15 +128,6 @@ export function CombinedTriadFretboard({ progression = [], renderMode = "triads"
                 );
               })}
             </div>
-          ) : (
-            <div className="mt-2 flex items-center gap-3" aria-label="Inversion colour legend">
-              {shapes.map((shape) => (
-                <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500" key={shape.id}>
-                  <span className={`h-2.5 w-2.5 rounded-full ${inversionStyles[shape.inversion].marker}`} aria-hidden="true" />
-                  {inversionStyles[shape.inversion].shortLabel}
-                </span>
-              ))}
-            </div>
           )}
         </div>
         <LabelModeToggle labelMode={labelMode} onChange={setLabelMode} />
@@ -134,11 +138,11 @@ export function CombinedTriadFretboard({ progression = [], renderMode = "triads"
           <div className="fretboard relative h-[250px] w-full rounded-r-lg sm:h-[300px]" aria-label={isProgression ? "Chord progression fretboard diagram" : `${shapes[0].chord.symbol} fretboard diagram`}>
             <div className="absolute inset-y-0 left-0 z-10 w-[5px] bg-[#302a24] shadow-[2px_0_3px_rgba(0,0,0,0.25)]" aria-hidden="true" />
 
-            {Array.from({ length: maxFret }, (_, index) => index + 1).map((fret) => (
+            {Array.from({ length: fretboardFretCount }, (_, index) => index + 1).map((fret) => (
               <div
                 className="absolute inset-y-0 border-r border-[#5d4935]/35"
                 key={fret}
-                style={{ left: `${((fret - 1) / maxFret) * 100}%`, width: `${100 / maxFret}%` }}
+                style={{ left: `${((fret - 1) / fretboardFretCount) * 100}%`, width: `${100 / fretboardFretCount}%` }}
                 aria-hidden="true"
               />
             ))}
@@ -147,7 +151,7 @@ export function CombinedTriadFretboard({ progression = [], renderMode = "triads"
               <div
                 className="absolute top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col gap-10 opacity-20"
                 key={fret}
-                style={{ left: `${((fret - 0.5) / maxFret) * 100}%` }}
+                style={{ left: `${((fret - 0.5) / fretboardFretCount) * 100}%` }}
                 aria-hidden="true"
               >
                 {(fret === 12 ? [0, 1] : [0]).map((dot) => (
@@ -177,7 +181,7 @@ export function CombinedTriadFretboard({ progression = [], renderMode = "triads"
 
             {markers.map((marker) => {
               const stackOffset = (marker.stackIndex - (marker.stackTotal - 1) / 2) * 13;
-              const left = marker.fret === 0 ? 0 : ((marker.fret - 0.5) / maxFret) * 100;
+              const left = marker.fret === 0 ? 0 : ((marker.fret - 0.5) / fretboardFretCount) * 100;
               const markerProgressionItem = marker.progressionIndex === null ? null : progression[marker.progressionIndex];
               const isFaded = markerProgressionItem !== null && markerProgressionItem.id !== focusedProgressionId;
               return (
@@ -194,11 +198,11 @@ export function CombinedTriadFretboard({ progression = [], renderMode = "triads"
           </div>
 
           <div className="relative mt-3 h-5" aria-label="Fret numbers">
-            {Array.from({ length: maxFret }, (_, index) => index + 1).map((fret) => (
+            {Array.from({ length: fretboardFretCount }, (_, index) => index + 1).map((fret) => (
               <span
                 className="absolute -translate-x-1/2 text-[10px] font-semibold tabular-nums text-zinc-400"
                 key={fret}
-                style={{ left: `${((fret - 0.5) / maxFret) * 100}%` }}
+                style={{ left: `${((fret - 0.5) / fretboardFretCount) * 100}%` }}
               >
                 {fret}
               </span>

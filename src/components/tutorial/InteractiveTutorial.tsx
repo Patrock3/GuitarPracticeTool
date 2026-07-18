@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 
 interface InteractiveTutorialProps {
   onClose: () => void;
@@ -66,11 +67,16 @@ export function InteractiveTutorial({ onClose }: InteractiveTutorialProps) {
 
     updateTargetRect();
     const settleTimer = window.setTimeout(updateTargetRect, 350);
+    const resizeObserver = typeof ResizeObserver === "undefined"
+      ? null
+      : new ResizeObserver(updateTargetRect);
+    resizeObserver?.observe(target);
     window.addEventListener("resize", updateTargetRect);
     window.addEventListener("scroll", updateTargetRect, true);
 
     return () => {
       window.clearTimeout(settleTimer);
+      resizeObserver?.disconnect();
       window.removeEventListener("resize", updateTargetRect);
       window.removeEventListener("scroll", updateTargetRect, true);
     };
@@ -82,12 +88,31 @@ export function InteractiveTutorial({ onClose }: InteractiveTutorialProps) {
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") {
+        onClose();
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+
+      const target = document.querySelector<HTMLElement>(`[data-tutorial-target="${step.target}"]`);
+      const focusable = [
+        ...getFocusableElements(target),
+        ...getFocusableElements(popoverRef.current),
+      ];
+      if (focusable.length === 0) return;
+
+      const currentIndex = focusable.indexOf(document.activeElement as HTMLElement);
+      const nextIndex = event.shiftKey
+        ? (currentIndex <= 0 ? focusable.length - 1 : currentIndex - 1)
+        : (currentIndex === focusable.length - 1 ? 0 : currentIndex + 1);
+      event.preventDefault();
+      focusable[nextIndex].focus();
     }
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
+  }, [onClose, step.target]);
 
   const spotlightStyle = targetRect ? {
     height: targetRect.height + spotlightPadding * 2,
@@ -96,20 +121,33 @@ export function InteractiveTutorial({ onClose }: InteractiveTutorialProps) {
     width: targetRect.width + spotlightPadding * 2,
   } : undefined;
   const popoverStyle = targetRect ? getPopoverPosition(targetRect) : undefined;
+  const backdropSections = targetRect
+    ? getBackdropSections(targetRect)
+    : [{ inset: 0 } satisfies CSSProperties];
   const isFinalStep = stepIndex === tutorialSteps.length - 1;
 
   return (
-    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-labelledby="tutorial-title">
+    <div className="pointer-events-none fixed inset-0 z-50">
+      {backdropSections.map((style, index) => (
+        <div
+          className="pointer-events-auto fixed bg-zinc-950/60"
+          key={index}
+          onClick={onClose}
+          style={style}
+        />
+      ))}
       {targetRect && (
         <div
-          className="pointer-events-none fixed rounded-lg border-2 border-teal-400 shadow-[0_0_0_4px_rgba(20,184,166,0.2),0_0_0_9999px_rgba(9,9,11,0.62)] transition-[left,top,width,height] duration-200"
+          className="pointer-events-none fixed rounded-lg border-2 border-teal-400 shadow-[0_0_0_4px_rgba(20,184,166,0.2)] transition-[left,top,width,height] duration-200"
           style={spotlightStyle}
         />
       )}
 
       <div
-        className="fixed w-[min(20rem,calc(100vw-2rem))] rounded-lg border border-zinc-200 bg-white p-4 shadow-2xl outline-none"
+        aria-labelledby="tutorial-title"
+        className="pointer-events-auto fixed w-[min(20rem,calc(100vw-2rem))] rounded-lg border border-zinc-200 bg-white p-4 shadow-2xl outline-none"
         ref={popoverRef}
+        role="dialog"
         style={popoverStyle}
         tabIndex={-1}
       >
@@ -119,14 +157,7 @@ export function InteractiveTutorial({ onClose }: InteractiveTutorialProps) {
         <h2 className="mt-1 text-lg font-black text-zinc-950" id="tutorial-title">{step.title}</h2>
         <p className="mt-2 text-sm leading-6 text-zinc-600">{step.description}</p>
 
-        <div className="mt-4 flex items-center justify-between gap-3 border-t border-zinc-100 pt-3">
-          <button
-            className="h-9 rounded-md px-2 text-sm font-semibold text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-800"
-            onClick={onClose}
-            type="button"
-          >
-            Skip
-          </button>
+        <div className="mt-4 flex items-center justify-end gap-3 border-t border-zinc-100 pt-3">
           <div className="flex gap-2">
             <button
               className="h-9 rounded-md border border-zinc-200 bg-white px-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40"
@@ -148,6 +179,29 @@ export function InteractiveTutorial({ onClose }: InteractiveTutorialProps) {
       </div>
     </div>
   );
+}
+
+function getBackdropSections(targetRect: TargetRect): CSSProperties[] {
+  const holeTop = Math.max(0, targetRect.top);
+  const holeBottom = Math.min(window.innerHeight, targetRect.bottom);
+  const holeLeft = Math.max(0, targetRect.left);
+  const holeRight = Math.min(window.innerWidth, targetRect.right);
+  const holeHeight = Math.max(0, holeBottom - holeTop);
+
+  return [
+    { height: holeTop, left: 0, right: 0, top: 0 },
+    { bottom: 0, left: 0, right: 0, top: holeBottom },
+    { height: holeHeight, left: 0, top: holeTop, width: holeLeft },
+    { height: holeHeight, left: holeRight, right: 0, top: holeTop },
+  ];
+}
+
+function getFocusableElements(container: HTMLElement | null): HTMLElement[] {
+  if (!container) return [];
+
+  return Array.from(container.querySelectorAll<HTMLElement>(
+    "button:not([disabled]), select:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex='-1'])",
+  ));
 }
 
 function getPopoverPosition(targetRect: TargetRect) {

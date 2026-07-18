@@ -1,29 +1,68 @@
+import type { ReactNode } from "react";
 import type { VisualStringGroup } from "../../data/stringSets";
-import { getFrettedPitchClass } from "../../features/fretboard/standardTuning";
 import { noteToPitchClass } from "../../features/fretboard/noteMath";
+import { getFrettedPitchClass } from "../../features/fretboard/standardTuning";
+import type { DiatonicChord } from "../../features/harmony/harmonyTypes";
+import { buildChordTones } from "../../features/triads/triadTheory";
 import { stringsForGroup } from "../../features/triads/triadTargets";
+import type { TriadInterval } from "../../features/triads/triadTypes";
 import type { FretboardLabelMode } from "./FretboardMarkerLabel";
+import { fretboardFretCount } from "./fretboardLayout";
 
 interface ScaleFretboardViewProps {
   labelMode: FretboardLabelMode;
   notes: string[];
   root: string;
+  selectedChord: DiatonicChord;
   stringGroup: VisualStringGroup;
   headerControls?: ReactNode;
 }
 
 const allStrings = [1, 2, 3, 4, 5, 6];
-const maxFret = 15;
 const positionFrets = [3, 5, 7, 9, 12];
 
-export function ScaleFretboardView({ headerControls, labelMode, notes, root, stringGroup }: ScaleFretboardViewProps) {
-  const selectedStrings = stringGroup === "all" ? ([1, 2, 3, 4, 5, 6] as const) : stringsForGroup(stringGroup);
-  const rootIndex = Math.max(0, notes.findIndex((note) => noteToPitchClass(note) === noteToPitchClass(root)));
+const chordToneStyles: Record<TriadInterval, { label: string; marker: string }> = {
+  "1": { label: "Root", marker: "bg-teal-800" },
+  "3": { label: "3rd", marker: "bg-amber-600" },
+  b3: { label: "3rd", marker: "bg-amber-600" },
+  "5": { label: "5th", marker: "bg-rose-700" },
+  b5: { label: "5th", marker: "bg-rose-700" },
+};
+
+export function ScaleFretboardView({
+  headerControls,
+  labelMode,
+  notes,
+  root,
+  selectedChord,
+  stringGroup,
+}: ScaleFretboardViewProps) {
+  const selectedStrings = stringGroup === "all"
+    ? ([1, 2, 3, 4, 5, 6] as const)
+    : stringsForGroup(stringGroup);
+  const rootIndex = Math.max(
+    0,
+    notes.findIndex((note) => noteToPitchClass(note) === noteToPitchClass(root)),
+  );
+  const selectedChordTones = buildChordTones(selectedChord.root, selectedChord.quality);
   const scaleMarkers = selectedStrings.flatMap((string) =>
-    Array.from({ length: maxFret + 1 }, (_, fret) => {
-      const noteIndex = notes.findIndex((note) => noteToPitchClass(note) === getFrettedPitchClass(string, fret));
+    Array.from({ length: fretboardFretCount + 1 }, (_, fret) => {
+      const noteIndex = notes.findIndex(
+        (note) => noteToPitchClass(note) === getFrettedPitchClass(string, fret),
+      );
       if (noteIndex < 0) return [];
-      return [{ string, fret, note: notes[noteIndex], degree: ((noteIndex - rootIndex + notes.length) % notes.length) + 1 }];
+
+      const note = notes[noteIndex];
+      const chordTone = selectedChordTones.find(
+        (tone) => tone.pitchClass === noteToPitchClass(note),
+      );
+      return [{
+        string,
+        fret,
+        note,
+        degree: ((noteIndex - rootIndex + notes.length) % notes.length) + 1,
+        chordTone,
+      }];
     }).flat(),
   );
 
@@ -36,6 +75,17 @@ export function ScaleFretboardView({ headerControls, labelMode, notes, root, str
             {root} scale view <span className="font-semibold text-zinc-400">/ {stringGroup === "all" ? "all strings" : `strings ${stringGroup}`}</span>
           </h3>
           <p className="mt-1 text-xs text-zinc-400">Complete parent scale · degrees shown from {root}</p>
+          <div className="mt-2 flex flex-wrap items-center gap-3" aria-label={`${selectedChord.symbol} chord tone colours`}>
+            <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-400">
+              Selected triad · {selectedChord.symbol}
+            </span>
+            {selectedChordTones.map((tone) => (
+              <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500" key={tone.interval}>
+                <span className={`h-2.5 w-2.5 rounded-full ${chordToneStyles[tone.interval].marker}`} aria-hidden="true" />
+                {chordToneStyles[tone.interval].label}
+              </span>
+            ))}
+          </div>
         </div>
         {headerControls}
       </div>
@@ -43,11 +93,11 @@ export function ScaleFretboardView({ headerControls, labelMode, notes, root, str
         <div className="relative ml-7 sm:ml-10">
           <div className="fretboard relative h-[250px] w-full rounded-r-lg sm:h-[300px]" aria-label={`${root} scale fretboard diagram`}>
             <div className="absolute inset-y-0 left-0 z-10 w-[5px] bg-[#302a24] shadow-[2px_0_3px_rgba(0,0,0,0.25)]" aria-hidden="true" />
-            {Array.from({ length: maxFret }, (_, index) => index + 1).map((fret) => (
-              <div className="absolute inset-y-0 border-r border-[#5d4935]/35" key={fret} style={{ left: `${((fret - 1) / maxFret) * 100}%`, width: `${100 / maxFret}%` }} aria-hidden="true" />
+            {Array.from({ length: fretboardFretCount }, (_, index) => index + 1).map((fret) => (
+              <div className="absolute inset-y-0 border-r border-[#5d4935]/35" key={fret} style={{ left: `${((fret - 1) / fretboardFretCount) * 100}%`, width: `${100 / fretboardFretCount}%` }} aria-hidden="true" />
             ))}
             {positionFrets.map((fret) => (
-              <div className="absolute top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col gap-10 opacity-20" key={fret} style={{ left: `${((fret - 0.5) / maxFret) * 100}%` }} aria-hidden="true">
+              <div className="absolute top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col gap-10 opacity-20" key={fret} style={{ left: `${((fret - 0.5) / fretboardFretCount) * 100}%` }} aria-hidden="true">
                 {(fret === 12 ? [0, 1] : [0]).map((dot) => <span className="block h-2.5 w-2.5 rounded-full bg-[#382b20] sm:h-3 sm:w-3" key={dot} />)}
               </div>
             ))}
@@ -58,9 +108,18 @@ export function ScaleFretboardView({ headerControls, labelMode, notes, root, str
               <span className="absolute right-[calc(100%+0.65rem)] z-20 -translate-y-1/2 text-[10px] font-bold text-zinc-400" key={`label-${string}`} style={{ top: `${((string - 0.5) / allStrings.length) * 100}%` }}>{string}</span>
             ))}
             {scaleMarkers.map((marker) => {
-              const left = marker.fret === 0 ? 0 : ((marker.fret - 0.5) / maxFret) * 100;
+              const left = marker.fret === 0
+                ? 0
+                : ((marker.fret - 0.5) / fretboardFretCount) * 100;
+              const markerColour = marker.chordTone
+                ? chordToneStyles[marker.chordTone.interval].marker
+                : "bg-zinc-600";
+              const chordToneTitle = marker.chordTone
+                ? `, ${chordToneStyles[marker.chordTone.interval].label} of ${selectedChord.symbol}`
+                : "";
+
               return (
-                <div className={`absolute z-20 flex h-[clamp(2.25rem,3.5vw,3rem)] w-[clamp(2.25rem,3.5vw,3rem)] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border-2 border-white/90 text-white shadow-[0_3px_8px_rgba(30,24,18,0.3)] ${marker.degree === 1 ? "bg-teal-800" : "bg-zinc-700"}`} key={`${marker.string}-${marker.fret}`} style={{ left: `${left}%`, top: `${((marker.string - 0.5) / allStrings.length) * 100}%` }} title={`${marker.degree} ${marker.note}, fret ${marker.fret}`}>
+                <div className={`absolute z-20 flex h-[clamp(2.25rem,3.5vw,3rem)] w-[clamp(2.25rem,3.5vw,3rem)] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border-2 border-white/90 text-white shadow-[0_3px_8px_rgba(30,24,18,0.3)] ${markerColour}`} key={`${marker.string}-${marker.fret}`} style={{ left: `${left}%`, top: `${((marker.string - 0.5) / allStrings.length) * 100}%` }} title={`${marker.degree} ${marker.note}${chordToneTitle}, fret ${marker.fret}`}>
                   {labelMode === "tab" ? (
                     <span className="text-sm font-black tabular-nums">{marker.fret}</span>
                   ) : (
@@ -71,11 +130,10 @@ export function ScaleFretboardView({ headerControls, labelMode, notes, root, str
             })}
           </div>
           <div className="relative mt-3 h-5" aria-label="Fret numbers">
-            {Array.from({ length: maxFret }, (_, index) => index + 1).map((fret) => <span className="absolute -translate-x-1/2 text-[10px] font-semibold tabular-nums text-zinc-400" key={fret} style={{ left: `${((fret - 0.5) / maxFret) * 100}%` }}>{fret}</span>)}
+            {Array.from({ length: fretboardFretCount }, (_, index) => index + 1).map((fret) => <span className="absolute -translate-x-1/2 text-[10px] font-semibold tabular-nums text-zinc-400" key={fret} style={{ left: `${((fret - 0.5) / fretboardFretCount) * 100}%` }}>{fret}</span>)}
           </div>
         </div>
       </div>
     </>
   );
 }
-import type { ReactNode } from "react";

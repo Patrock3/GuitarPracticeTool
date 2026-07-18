@@ -264,7 +264,7 @@ function PracticeWorkspace({
           progression={visualisationMode === "triads" ? progressionShapes : []}
           renderMode={visualisationMode}
           scaleNotes={chords.map((chord) => chord.root)}
-          scaleRoot={selectedChord.root}
+          scaleRoot={chords[0].root}
           scaleStringGroup={selectedStringGroup}
           shapes={shapes}
         />
