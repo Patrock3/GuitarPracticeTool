@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 
 interface InteractiveTutorialProps {
+  activePage: "practice" | "progress";
   onClose: () => void;
   onShowPractice: () => void;
 }
@@ -61,13 +62,25 @@ const tutorialSteps: TutorialStep[] = [
   },
 ];
 
+const progressReviewStep: TutorialStep = {
+  targets: ["overall-practice-summary", "progress-database"],
+  title: "Review your progress",
+  description: (
+    <>
+      <p>Your practice is automatically recorded here.</p>
+      <p className="mt-2">The Overall Practice Summary gives you a quick overview of your practice across all keys, while the Progress Database shows detailed counts for each chord, inversion and string group.</p>
+    </>
+  ),
+};
+
 const spotlightPadding = 6;
 
-export function InteractiveTutorial({ onClose, onShowPractice }: InteractiveTutorialProps) {
+export function InteractiveTutorial({ activePage, onClose, onShowPractice }: InteractiveTutorialProps) {
   const [stepIndex, setStepIndex] = useState(0);
   const [targetRects, setTargetRects] = useState<TargetRect[]>([]);
   const popoverRef = useRef<HTMLDivElement>(null);
-  const step = tutorialSteps[stepIndex];
+  const isFinalStep = stepIndex === tutorialSteps.length - 1;
+  const step = isFinalStep && activePage === "progress" ? progressReviewStep : tutorialSteps[stepIndex];
 
   useEffect(() => {
     const targets = findTutorialTargets(step.targets);
@@ -145,7 +158,6 @@ export function InteractiveTutorial({ onClose, onShowPractice }: InteractiveTuto
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose, step.targets]);
 
-  const isFinalStep = stepIndex === tutorialSteps.length - 1;
   const spotlightStyles = targetRects.map((targetRect) => ({
     height: targetRect.height + spotlightPadding * 2,
     left: targetRect.left - spotlightPadding,

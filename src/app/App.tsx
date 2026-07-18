@@ -137,6 +137,7 @@ export function App() {
       </AppLayout>
       {isTutorialOpen && (
         <InteractiveTutorial
+          activePage={activePage}
           onClose={() => setIsTutorialOpen(false)}
           onShowPractice={() => setActivePage("practice")}
         />
