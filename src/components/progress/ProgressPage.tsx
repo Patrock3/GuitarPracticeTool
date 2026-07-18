@@ -18,7 +18,6 @@ interface ProgressPageProps {
   chords: DiatonicChord[];
   onKeyChange: (key: MusicalKey) => void;
   progress: PracticeProgressMap;
-  selectedKey: MusicalKey;
 }
 
 interface SelectedCell {
@@ -26,7 +25,7 @@ interface SelectedCell {
   stringGroup: StringGroup;
 }
 
-export function ProgressPage({ chords, onKeyChange, progress, selectedKey }: ProgressPageProps) {
+export function ProgressPage({ chords, onKeyChange, progress }: ProgressPageProps) {
   const [selectedCell, setSelectedCell] = useState<SelectedCell>(() => ({
     chord: chords[0],
     stringGroup: "123",
@@ -101,16 +100,13 @@ export function ProgressPage({ chords, onKeyChange, progress, selectedKey }: Pro
       <section className="grid gap-3">
         <div>
           <h2 className="text-xl font-black text-zinc-950">Progress Database</h2>
-          <p className="mt-1 text-sm text-zinc-600">
-            Current Key: <span className="font-bold text-zinc-800">{formatKeyLabel(selectedKey)}</span>
-          </p>
         </div>
 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_400px]">
           <section className="rounded-md border border-zinc-200 bg-white p-4 shadow-sm">
             <div className="mb-4">
               <p className="text-sm text-zinc-600">
-                Exact practice counts across the three inversions for each chord and string group.
+                Practice counts across the three inversions for each chord and string group.
               </p>
             </div>
 
@@ -227,10 +223,6 @@ export function ProgressPage({ chords, onKeyChange, progress, selectedKey }: Pro
       </section>
     </div>
   );
-}
-
-function formatKeyLabel(key: MusicalKey): string {
-  return `${key.tonic} ${key.quality === "major" ? "Major" : "Minor"}`;
 }
 
 function findPreferredKey(

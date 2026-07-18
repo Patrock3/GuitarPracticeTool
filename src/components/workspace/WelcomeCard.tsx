@@ -18,10 +18,7 @@ interface LearningSection {
   id: string;
   title: string;
   groups: ConceptGroup[];
-  callout?: {
-    title: string;
-    text: string;
-  };
+  callout?: string;
 }
 
 const welcomeContent = {
@@ -161,10 +158,7 @@ const welcomeContent = {
           ],
         },
       ] as ConceptGroup[],
-      callout: {
-        title: "Not quite getting it?",
-        text: "No worries. Don't expect to understand everything before you start practising. Repetition and focus will naturally build your understanding of harmony—not reading and trying to internalise written concepts without any practice. Just do it, and it will come.",
-      },
+      callout: "Don't expect to understand everything before you start practising. Repetition and focus will naturally build your understanding of harmony.",
     },
   ] as LearningSection[],
 };
@@ -258,11 +252,8 @@ export function WelcomeCard({ onStartTutorial }: WelcomeCardProps) {
                       ))}
                     </div>
                     {section.callout && (
-                      <aside className="mt-4 rounded-md border border-teal-100 bg-teal-50/60 px-4 py-3 text-sm leading-6 text-zinc-600">
-                        <p>
-                          <strong className="font-bold text-zinc-900">{section.callout.title}</strong>{" "}
-                          {section.callout.text}
-                        </p>
+                      <aside className="mt-4 rounded-md border border-zinc-100 bg-zinc-50/50 px-4 py-4 text-sm leading-6 text-zinc-500">
+                        <p>{section.callout}</p>
                       </aside>
                     )}
                   </div>

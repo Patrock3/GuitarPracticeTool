@@ -27,9 +27,9 @@ const tutorialSteps: TutorialStep[] = [
     title: "Choose a key",
     description: (
       <>
-        <p>Select a major key to practise.</p>
-        <p className="mt-2">Changing the key updates the harmonised scale, triads, fretboard and practice data.</p>
-        <p className="mt-2">You can also use <strong className="font-bold text-zinc-800">Random</strong> to quickly choose a key for practice.</p>
+        <p><strong className="font-bold text-zinc-800">Select a major key to practise.</strong></p>
+        <p className="mt-2">Everything updates automatically when you change the key.</p>
+        <p className="mt-2">Use <strong className="font-bold text-zinc-800">Random</strong> to pick a key for you.</p>
       </>
     ),
   },

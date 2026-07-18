@@ -132,7 +132,7 @@ export function App() {
             visualisationMode={visualisationMode}
           />
         ) : (
-          <ProgressPage chords={chords} onKeyChange={chooseKey} progress={progress} selectedKey={selectedKey} />
+          <ProgressPage chords={chords} onKeyChange={chooseKey} progress={progress} />
         )}
       </AppLayout>
       {isTutorialOpen && (
