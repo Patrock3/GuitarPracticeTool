@@ -1,15 +1,19 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Check } from "lucide-react";
+import type { MusicalKey } from "../../data/keys";
 import type { StringGroup } from "../../data/stringSets";
-import { stringSets } from "../../data/stringSets";
+import { stringGroupColourClasses, stringSets } from "../../data/stringSets";
 import type { DiatonicChord } from "../../features/harmony/harmonyTypes";
 import type { PracticeProgressMap } from "../../features/practice/practiceProgressTypes";
+import { summarizeLifetimeChordPractice } from "../../features/practice/practiceAnalytics";
 import { getInversionProgress, getPracticeHistory, summarizeChordStringGroup } from "../../features/practice/progressSummary";
 import type { PracticeLedgerEntry } from "../../features/practice/progressSummary";
+import { OverallPracticeSummary } from "./OverallPracticeSummary";
 
 interface ProgressPageProps {
   chords: DiatonicChord[];
   progress: PracticeProgressMap;
+  selectedKey: MusicalKey;
 }
 
 interface SelectedCell {
@@ -17,7 +21,7 @@ interface SelectedCell {
   stringGroup: StringGroup;
 }
 
-export function ProgressPage({ chords, progress }: ProgressPageProps) {
+export function ProgressPage({ chords, progress, selectedKey }: ProgressPageProps) {
   const [selectedCell, setSelectedCell] = useState<SelectedCell>(() => ({
     chord: chords[0],
     stringGroup: "123",
@@ -31,21 +35,48 @@ export function ProgressPage({ chords, progress }: ProgressPageProps) {
     [progress, selectedCell],
   );
   const groupedHistory = useMemo(() => groupHistoryByDate(practiceHistory), [practiceHistory]);
+  const lifetimeSummaries = useMemo(
+    () => summarizeLifetimeChordPractice(progress),
+    [progress],
+  );
+
+  useEffect(() => {
+    setSelectedCell((current) => chords.some((chord) => chord.id === current.chord.id)
+      ? current
+      : { chord: chords[0], stringGroup: current.stringGroup });
+  }, [chords]);
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_400px]">
-      <section className="rounded-md border border-zinc-200 bg-white p-4 shadow-sm">
-        <div className="mb-4">
-          <h2 className="flex items-center gap-2 text-xl font-black text-zinc-950">
-            Progress database
-            <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] text-amber-700 ring-1 ring-inset ring-amber-200">
-              Beta
-            </span>
-          </h2>
+    <div className="grid gap-5">
+      <header>
+        <h1 className="flex items-center gap-2 text-2xl font-black text-zinc-950">
+          Practice Analytics
+          <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] text-amber-700 ring-1 ring-inset ring-amber-200">
+            Beta
+          </span>
+        </h1>
+        <p className="mt-1 text-sm text-zinc-600">
+          Review your lifetime practice patterns and drill into exact counts for the current key.
+        </p>
+      </header>
+
+      <OverallPracticeSummary summaries={lifetimeSummaries} />
+
+      <section className="grid gap-3">
+        <div>
+          <h2 className="text-xl font-black text-zinc-950">Progress Database</h2>
           <p className="mt-1 text-sm text-zinc-600">
-            Counts show total practices across the three inversions for each chord and string group.
+            Current Key: <span className="font-bold text-zinc-800">{formatKeyLabel(selectedKey)}</span>
           </p>
         </div>
+
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_400px]">
+          <section className="rounded-md border border-zinc-200 bg-white p-4 shadow-sm">
+            <div className="mb-4">
+              <p className="text-sm text-zinc-600">
+                Exact practice counts across the three inversions for each chord and string group.
+              </p>
+            </div>
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[680px] border-collapse">
@@ -59,7 +90,10 @@ export function ProgressPage({ chords, progress }: ProgressPageProps) {
                     className="border-b border-zinc-200 p-3 text-center text-xs font-bold uppercase tracking-[0.12em] text-zinc-500"
                     key={stringGroup}
                   >
-                    {stringGroup}
+                    <span className="inline-flex items-center justify-center gap-1.5">
+                      <span className={`h-2 w-2 rounded-full ${stringGroupColourClasses[stringGroup]}`} aria-hidden="true" />
+                      {stringGroup}
+                    </span>
                   </th>
                 ))}
               </tr>
@@ -149,8 +183,14 @@ export function ProgressPage({ chords, progress }: ProgressPageProps) {
           )}
         </div>
       </aside>
+        </div>
+      </section>
     </div>
   );
+}
+
+function formatKeyLabel(key: MusicalKey): string {
+  return `${key.tonic} ${key.quality === "major" ? "Major" : "Minor"}`;
 }
 
 function shortInversionLabel(inversion: PracticeLedgerEntry["inversion"]): string {

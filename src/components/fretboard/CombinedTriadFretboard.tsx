@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
-import { triadInversionLabels } from "../../data/triads";
+import { triadInversionLabels, triadInversions } from "../../data/triads";
+import { noteToPitchClass } from "../../features/fretboard/noteMath";
+import { getFrettedPitchClass } from "../../features/fretboard/standardTuning";
+import type { GuitarString } from "../../features/fretboard/standardTuning";
 import type { FretMarker, TriadShape } from "../../features/triads/triadTypes";
 import type { ProgressionShape } from "../../features/progression/progressionTypes";
 import { sequenceNumber } from "../../features/progression/progressionFormat";
 import { FretboardMarkerLabel } from "./FretboardMarkerLabel";
 import type { FretboardLabelMode } from "./FretboardMarkerLabel";
-import { ScaleFretboardView } from "./ScaleFretboardView";
 import type { VisualisationMode } from "../../features/visualisation/visualisationTypes";
 import type { VisualStringGroup } from "../../data/stringSets";
+import { stringsForGroup } from "../../features/triads/triadTargets";
 import { fretboardFretCount, inversionStyles } from "./fretboardLayout";
 
 interface CombinedTriadFretboardProps {
@@ -19,15 +22,23 @@ interface CombinedTriadFretboardProps {
   scaleStringGroup?: VisualStringGroup;
 }
 
-const strings = [1, 2, 3, 4, 5, 6];
+const strings: GuitarString[] = [1, 2, 3, 4, 5, 6];
 const positionFrets = [3, 5, 7, 9, 12];
 const progressionColours = ["bg-teal-800", "bg-indigo-700", "bg-rose-700", "bg-amber-700", "bg-sky-700", "bg-violet-700", "bg-emerald-700", "bg-orange-700"];
+const scaleTriadLabels = { root: "Root", first: "3rd", second: "5th" };
 
 interface CombinedMarker extends FretMarker {
   shape: TriadShape;
   stackIndex: number;
   stackTotal: number;
   progressionIndex: number | null;
+}
+
+interface ScaleOverlayMarker {
+  degree: number;
+  fret: number;
+  note: string;
+  string: GuitarString;
 }
 
 export function CombinedTriadFretboard({ progression = [], renderMode = "triads", scaleNotes = [], scaleRoot, scaleStringGroup, shapes }: CombinedTriadFretboardProps) {
@@ -52,22 +63,8 @@ export function CombinedTriadFretboard({ progression = [], renderMode = "triads"
     );
   }
 
-  if (renderMode === "scale") {
-    return (
-      <section className="min-w-0 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-6">
-        <ScaleFretboardView
-          headerControls={<LabelModeToggle labelMode={labelMode} onChange={setLabelMode} />}
-          labelMode={labelMode}
-          notes={scaleNotes}
-          root={scaleRoot ?? shapes[0].chord.root}
-          selectedChord={shapes[0].chord}
-          stringGroup={scaleStringGroup ?? shapes[0].stringGroup}
-        />
-      </section>
-    );
-  }
-
-  const isProgression = progression.length > 0;
+  const isScaleMode = renderMode === "scale";
+  const isProgression = !isScaleMode && progression.length > 0;
   const displayedShapes = isProgression ? progression.map((item) => item.shape) : shapes;
   const rawMarkers = displayedShapes.flatMap((shape, progressionIndex) =>
     shape.markers.map((marker) => ({ ...marker, shape, progressionIndex: isProgression ? progressionIndex : null })),
@@ -80,6 +77,12 @@ export function CombinedTriadFretboard({ progression = [], renderMode = "triads"
   const markers: CombinedMarker[] = Array.from(groupedMarkers.values()).flatMap((group) =>
     group.map((marker, stackIndex) => ({ ...marker, stackIndex, stackTotal: group.length })),
   ).filter((marker) => marker.fret <= fretboardFretCount);
+  const displayStringGroup = isScaleMode
+    ? scaleStringGroup ?? shapes[0].stringGroup
+    : shapes[0].stringGroup;
+  const scaleOverlayMarkers = isScaleMode
+    ? buildScaleOverlayMarkers(scaleNotes, shapes[0].chord.root, displayStringGroup, markers)
+    : [];
   const visiblePositionFrets = positionFrets.filter((fret) => fret <= fretboardFretCount);
 
   return (
@@ -89,16 +92,30 @@ export function CombinedTriadFretboard({ progression = [], renderMode = "triads"
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">Fretboard View</p>
           <div className="mt-1 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
             <h3 className="text-2xl font-black text-zinc-950">
-              {isProgression ? progression.map((item) => item.chord.symbol).join(" → ") : shapes[0].chord.symbol} <span className="font-semibold text-zinc-400">/ strings {shapes[0].stringGroup}</span>
+              {isProgression
+                ? progression.map((item) => item.chord.symbol).join(" → ")
+                : isScaleMode
+                  ? `${scaleRoot ?? shapes[0].chord.root} Scale`
+                  : shapes[0].chord.symbol}{" "}
+              <span className="font-semibold text-zinc-400">
+                / {displayStringGroup === "all" ? "all strings" : `strings ${displayStringGroup}`}
+              </span>
             </h3>
             {!isProgression && (
-              <div className="flex shrink-0 items-center gap-3" aria-label="Inversion colour legend">
-                {shapes.map((shape) => (
-                  <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500" key={shape.id}>
-                    <span className={`h-2.5 w-2.5 rounded-full ${inversionStyles[shape.inversion].marker}`} aria-hidden="true" />
-                    {inversionStyles[shape.inversion].shortLabel}
-                  </span>
-                ))}
+              <div className="flex shrink-0 items-center gap-3" aria-label={isScaleMode ? "Triad tone colour legend" : "Inversion colour legend"}>
+                {isScaleMode
+                  ? triadInversions.map((inversion) => (
+                    <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500" key={inversion}>
+                      <span className={`h-2.5 w-2.5 rounded-full ${inversionStyles[inversion].marker}`} aria-hidden="true" />
+                      {scaleTriadLabels[inversion]}
+                    </span>
+                  ))
+                  : shapes.map((shape) => (
+                    <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500" key={shape.id}>
+                      <span className={`h-2.5 w-2.5 rounded-full ${inversionStyles[shape.inversion].marker}`} aria-hidden="true" />
+                      {inversionStyles[shape.inversion].shortLabel}
+                    </span>
+                  ))}
               </div>
             )}
           </div>
@@ -129,7 +146,7 @@ export function CombinedTriadFretboard({ progression = [], renderMode = "triads"
 
       <div className="px-1 pb-2 sm:px-4">
         <div className="relative ml-7 sm:ml-10">
-          <div className="fretboard relative h-[250px] w-full rounded-r-lg sm:h-[300px]" aria-label={isProgression ? "Chord progression fretboard diagram" : `${shapes[0].chord.symbol} fretboard diagram`}>
+          <div className="fretboard relative h-[250px] w-full rounded-r-lg sm:h-[300px]" aria-label={isProgression ? "Chord progression fretboard diagram" : isScaleMode ? `${scaleRoot ?? shapes[0].chord.root} scale with ${shapes[0].chord.symbol} triads` : `${shapes[0].chord.symbol} fretboard diagram`}>
             <div className="absolute inset-y-0 left-0 z-10 w-[5px] bg-[#302a24] shadow-[2px_0_3px_rgba(0,0,0,0.25)]" aria-hidden="true" />
 
             {Array.from({ length: fretboardFretCount }, (_, index) => index + 1).map((fret) => (
@@ -173,6 +190,27 @@ export function CombinedTriadFretboard({ progression = [], renderMode = "triads"
               </span>
             ))}
 
+            {scaleOverlayMarkers.map((marker) => {
+              const left = marker.fret === 0 ? 0 : ((marker.fret - 0.5) / fretboardFretCount) * 100;
+              return (
+                <div
+                  className="absolute z-[15] flex h-[clamp(2.25rem,3.5vw,3rem)] w-[clamp(2.25rem,3.5vw,3rem)] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border-2 border-white/90 bg-zinc-600 text-white shadow-[0_3px_8px_rgba(30,24,18,0.3)]"
+                  key={`scale-${marker.string}-${marker.fret}`}
+                  style={{ left: `${left}%`, top: `${((marker.string - 0.5) / strings.length) * 100}%` }}
+                  title={`Scale degree ${marker.degree}: ${marker.note}, fret ${marker.fret}`}
+                >
+                  {labelMode === "tab" ? (
+                    <span className="text-sm font-black tabular-nums">{marker.fret}</span>
+                  ) : (
+                    <>
+                      <span className="text-xs font-black leading-none">{marker.degree}</span>
+                      <span className="mt-0.5 text-[10px] font-bold leading-none opacity-90">{marker.note}</span>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+
             {markers.map((marker) => {
               const stackOffset = (marker.stackIndex - (marker.stackTotal - 1) / 2) * 13;
               const left = marker.fret === 0 ? 0 : ((marker.fret - 0.5) / fretboardFretCount) * 100;
@@ -205,6 +243,39 @@ export function CombinedTriadFretboard({ progression = [], renderMode = "triads"
         </div>
       </div>
     </section>
+  );
+}
+
+function buildScaleOverlayMarkers(
+  notes: string[],
+  triadRoot: string,
+  stringGroup: VisualStringGroup,
+  triadMarkers: CombinedMarker[],
+): ScaleOverlayMarker[] {
+  const rootIndex = notes.findIndex(
+    (note) => noteToPitchClass(note) === noteToPitchClass(triadRoot),
+  );
+  if (rootIndex < 0) return [];
+
+  const occupiedPositions = new Set(
+    triadMarkers.map((marker) => `${marker.string}-${marker.fret}`),
+  );
+  const selectedStrings = stringGroup === "all" ? strings : stringsForGroup(stringGroup);
+
+  return selectedStrings.flatMap((string) =>
+    Array.from({ length: fretboardFretCount + 1 }, (_, fret) => {
+      if (occupiedPositions.has(`${string}-${fret}`)) return [];
+
+      const noteIndex = notes.findIndex(
+        (note) => noteToPitchClass(note) === getFrettedPitchClass(string, fret),
+      );
+      if (noteIndex < 0) return [];
+
+      const degree = ((noteIndex - rootIndex + notes.length) % notes.length) + 1;
+      if (![2, 4, 6, 7].includes(degree)) return [];
+
+      return [{ degree, fret, note: notes[noteIndex], string }];
+    }).flat(),
   );
 }
 

@@ -14,4 +14,11 @@ export const stringSets: StringSet[] = [
   "456",
 ];
 
+export const stringGroupColourClasses: Record<StringGroup, string> = {
+  "123": "bg-teal-700",
+  "234": "bg-amber-500",
+  "345": "bg-rose-600",
+  "456": "bg-indigo-600",
+};
+
 export const allStringSets: VisualStringGroup[] = [...stringSets, "all"];

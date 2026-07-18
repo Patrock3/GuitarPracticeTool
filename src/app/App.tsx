@@ -132,7 +132,7 @@ export function App() {
             visualisationMode={visualisationMode}
           />
         ) : (
-          <ProgressPage chords={chords} progress={progress} />
+          <ProgressPage chords={chords} progress={progress} selectedKey={selectedKey} />
         )}
       </AppLayout>
       {isTutorialOpen && <InteractiveTutorial onClose={() => setIsTutorialOpen(false)} />}
@@ -173,6 +173,12 @@ function PracticeWorkspace({
   const [clearedProgression, setClearedProgression] = useState<ProgressionItem[] | null>(null);
   const [preSuggestionProgression, setPreSuggestionProgression] = useState<ProgressionItem[] | null>(null);
   const [nextProgressionId, setNextProgressionId] = useState(1);
+  const fretboardShapes = useMemo(
+    () => selectedStringGroup === "all"
+      ? stringSets.flatMap((stringGroup) => buildTriadShapes(selectedChord, stringGroup))
+      : shapes,
+    [selectedChord, selectedStringGroup, shapes],
+  );
   const progressionShapes = useMemo(() => progression.flatMap((item) => {
     const shape = buildTriadShapes(item.chord, selectedStringGroup === "all" ? "123" : selectedStringGroup).find((candidate) => candidate.inversion === item.inversion);
     return shape ? [{ ...item, shape }] : [];
@@ -266,7 +272,7 @@ function PracticeWorkspace({
           scaleNotes={chords.map((chord) => chord.root)}
           scaleRoot={chords[0].root}
           scaleStringGroup={selectedStringGroup}
-          shapes={shapes}
+          shapes={fretboardShapes}
         />
       </section>
       {visualisationMode === "triads" && <ProgressionBuilder
