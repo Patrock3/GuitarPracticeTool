@@ -68,23 +68,24 @@ export function ScaleFretboardView({
 
   return (
     <>
-      <div className="mb-7 flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">Scale map</p>
-          <h3 className="mt-1 text-2xl font-black text-zinc-950">
-            {root} scale view <span className="font-semibold text-zinc-400">/ {stringGroup === "all" ? "all strings" : `strings ${stringGroup}`}</span>
-          </h3>
-          <p className="mt-1 text-xs text-zinc-400">Complete parent scale · degrees shown from {root}</p>
-          <div className="mt-2 flex flex-wrap items-center gap-3" aria-label={`${selectedChord.symbol} chord tone colours`}>
-            <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-400">
-              Selected triad · {selectedChord.symbol}
-            </span>
-            {selectedChordTones.map((tone) => (
-              <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500" key={tone.interval}>
-                <span className={`h-2.5 w-2.5 rounded-full ${chordToneStyles[tone.interval].marker}`} aria-hidden="true" />
-                {chordToneStyles[tone.interval].label}
+      <div className="mb-7 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">Fretboard View</p>
+          <div className="mt-1 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
+            <h3 className="text-2xl font-black text-zinc-950">
+              {root} Scale <span className="font-semibold text-zinc-400">/ {stringGroup === "all" ? "all strings" : `strings ${stringGroup}`}</span>
+            </h3>
+            <div className="flex shrink-0 flex-wrap items-center gap-3" aria-label={`${selectedChord.symbol} chord tone colours`}>
+              <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-400">
+                Selected triad · {selectedChord.symbol}
               </span>
-            ))}
+              {selectedChordTones.map((tone) => (
+                <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500" key={tone.interval}>
+                  <span className={`h-2.5 w-2.5 rounded-full ${chordToneStyles[tone.interval].marker}`} aria-hidden="true" />
+                  {chordToneStyles[tone.interval].label}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
         {headerControls}

@@ -14,6 +14,16 @@ interface ConceptGroup {
   inversions?: string[];
 }
 
+interface LearningSection {
+  id: string;
+  title: string;
+  groups: ConceptGroup[];
+  callout?: {
+    title: string;
+    text: string;
+  };
+}
+
 const welcomeContent = {
   title: "Welcome to Guitar Lab",
   introduction: [
@@ -107,7 +117,7 @@ const welcomeContent = {
           points: [
             {
               label: "A natural chord family:",
-              text: "Building from each scale degree produces the harmonised major scale: seven related chords with their own roles and character.",
+              text: "Each note of the major scale becomes a chord, creating seven chords that naturally work well together.",
             },
             {
               label: "Shared material:",
@@ -151,8 +161,12 @@ const welcomeContent = {
           ],
         },
       ] as ConceptGroup[],
+      callout: {
+        title: "Not quite getting it?",
+        text: "No worries. Don't expect to understand everything before you start practising. Repetition and focus will naturally build your understanding of harmony—not reading and trying to internalise written concepts without any practice. Just do it, and it will come.",
+      },
     },
-  ],
+  ] as LearningSection[],
 };
 
 interface WelcomeCardProps {
@@ -243,6 +257,14 @@ export function WelcomeCard({ onStartTutorial }: WelcomeCardProps) {
                         </section>
                       ))}
                     </div>
+                    {section.callout && (
+                      <aside className="mt-4 rounded-md border border-teal-100 bg-teal-50/60 px-4 py-3 text-sm leading-6 text-zinc-600">
+                        <p>
+                          <strong className="font-bold text-zinc-900">{section.callout.title}</strong>{" "}
+                          {section.callout.text}
+                        </p>
+                      </aside>
+                    )}
                   </div>
                 </div>
               </div>
