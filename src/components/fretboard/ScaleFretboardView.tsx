@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { VisualStringGroup } from "../../data/stringSets";
+import { triadInversions } from "../../data/triads";
 import { noteToPitchClass } from "../../features/fretboard/noteMath";
 import { getFrettedPitchClass } from "../../features/fretboard/standardTuning";
 import type { DiatonicChord } from "../../features/harmony/harmonyTypes";
@@ -7,7 +8,7 @@ import { buildChordTones } from "../../features/triads/triadTheory";
 import { stringsForGroup } from "../../features/triads/triadTargets";
 import type { TriadInterval } from "../../features/triads/triadTypes";
 import type { FretboardLabelMode } from "./FretboardMarkerLabel";
-import { fretboardFretCount } from "./fretboardLayout";
+import { fretboardFretCount, inversionStyles } from "./fretboardLayout";
 
 interface ScaleFretboardViewProps {
   labelMode: FretboardLabelMode;
@@ -22,11 +23,11 @@ const allStrings = [1, 2, 3, 4, 5, 6];
 const positionFrets = [3, 5, 7, 9, 12];
 
 const chordToneStyles: Record<TriadInterval, { label: string; marker: string }> = {
-  "1": { label: "Root", marker: "bg-teal-800" },
-  "3": { label: "3rd", marker: "bg-amber-600" },
-  b3: { label: "3rd", marker: "bg-amber-600" },
-  "5": { label: "5th", marker: "bg-rose-700" },
-  b5: { label: "5th", marker: "bg-rose-700" },
+  "1": { label: "Root", marker: inversionStyles.root.marker },
+  "3": { label: "3rd", marker: inversionStyles.first.marker },
+  b3: { label: "3rd", marker: inversionStyles.first.marker },
+  "5": { label: "5th", marker: inversionStyles.second.marker },
+  b5: { label: "5th", marker: inversionStyles.second.marker },
 };
 
 export function ScaleFretboardView({
@@ -75,14 +76,11 @@ export function ScaleFretboardView({
             <h3 className="text-2xl font-black text-zinc-950">
               {root} Scale <span className="font-semibold text-zinc-400">/ {stringGroup === "all" ? "all strings" : `strings ${stringGroup}`}</span>
             </h3>
-            <div className="flex shrink-0 flex-wrap items-center gap-3" aria-label={`${selectedChord.symbol} chord tone colours`}>
-              <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-400">
-                Selected triad · {selectedChord.symbol}
-              </span>
-              {selectedChordTones.map((tone) => (
-                <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500" key={tone.interval}>
-                  <span className={`h-2.5 w-2.5 rounded-full ${chordToneStyles[tone.interval].marker}`} aria-hidden="true" />
-                  {chordToneStyles[tone.interval].label}
+            <div className="flex shrink-0 items-center gap-3" aria-label="Inversion colour legend">
+              {triadInversions.map((inversion) => (
+                <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500" key={inversion}>
+                  <span className={`h-2.5 w-2.5 rounded-full ${inversionStyles[inversion].marker}`} aria-hidden="true" />
+                  {inversionStyles[inversion].shortLabel}
                 </span>
               ))}
             </div>

@@ -30,29 +30,36 @@ export function StringGroupSelector({
   showInversionProgress = true,
   options = stringSets,
 }: StringGroupSelectorProps) {
+  const numberedOptions = options.filter((stringGroup) => stringGroup !== "all");
+  const showAllOption = options.includes("all");
+
+  function renderOption(stringGroup: VisualStringGroup, className = "") {
+    const isSelected = stringGroup === selectedStringGroup;
+    return (
+      <button
+        className={`h-12 rounded-md border text-sm font-black transition ${
+          isSelected
+            ? "border-zinc-950 bg-zinc-950 text-white"
+            : "border-zinc-200 bg-zinc-50 text-zinc-800 hover:border-teal-500"
+        } ${className}`}
+        key={stringGroup}
+        onClick={() => onChange(stringGroup)}
+        type="button"
+      >
+        {stringGroup === "all" ? "All" : stringGroup}
+      </button>
+    );
+  }
+
   return (
-    <section className="rounded-md border border-zinc-200 bg-white p-4 shadow-sm" data-tutorial-target="string-groups">
+    <section className="h-full min-h-[250px] rounded-md border border-zinc-200 bg-white p-4 shadow-sm" data-tutorial-target="string-groups">
       <h2 className="mb-3 text-sm font-bold uppercase tracking-[0.12em] text-zinc-700">
         String group
       </h2>
-      <div className={`grid gap-2 ${options.length > 4 ? "grid-cols-5" : "grid-cols-4"}`}>
-        {options.map((stringGroup) => {
-          const isSelected = stringGroup === selectedStringGroup;
-          return (
-            <button
-              className={`h-12 rounded-md border text-sm font-black transition ${
-                isSelected
-                  ? "border-zinc-950 bg-zinc-950 text-white"
-                  : "border-zinc-200 bg-zinc-50 text-zinc-800 hover:border-teal-500"
-              }`}
-              key={stringGroup}
-              onClick={() => onChange(stringGroup)}
-            >
-              {stringGroup === "all" ? "All" : stringGroup}
-            </button>
-          );
-        })}
+      <div className="grid grid-cols-4 gap-2">
+        {numberedOptions.map((stringGroup) => renderOption(stringGroup))}
       </div>
+      {showAllOption && <div className="mt-2">{renderOption("all", "w-full")}</div>}
       {showInversionProgress && <div className="mt-3 divide-y divide-zinc-100 border-t border-zinc-200 pt-1">
         {shapes.map((shape) => {
           const count = progress[shape.id]?.practisedCount ?? 0;

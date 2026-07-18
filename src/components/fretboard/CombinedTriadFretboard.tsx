@@ -8,7 +8,7 @@ import type { FretboardLabelMode } from "./FretboardMarkerLabel";
 import { ScaleFretboardView } from "./ScaleFretboardView";
 import type { VisualisationMode } from "../../features/visualisation/visualisationTypes";
 import type { VisualStringGroup } from "../../data/stringSets";
-import { fretboardFretCount } from "./fretboardLayout";
+import { fretboardFretCount, inversionStyles } from "./fretboardLayout";
 
 interface CombinedTriadFretboardProps {
   shapes: TriadShape[];
@@ -18,12 +18,6 @@ interface CombinedTriadFretboardProps {
   scaleRoot?: string;
   scaleStringGroup?: VisualStringGroup;
 }
-
-const inversionStyles = {
-  root: { marker: "bg-teal-800", shortLabel: "Root" },
-  first: { marker: "bg-amber-600", shortLabel: "1st" },
-  second: { marker: "bg-rose-700", shortLabel: "2nd" },
-};
 
 const strings = [1, 2, 3, 4, 5, 6];
 const positionFrets = [3, 5, 7, 9, 12];
