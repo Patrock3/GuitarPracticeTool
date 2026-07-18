@@ -1,6 +1,8 @@
 import type { StringGroup } from "../../data/stringSets";
 import { triadInversions } from "../../data/triads";
 import type { DiatonicChord } from "../harmony/harmonyTypes";
+import type { ChordQuality } from "../harmony/harmonyTypes";
+import { formatChordSymbol } from "../harmony/diatonicHarmony";
 import type { PracticeProgress, PracticeProgressMap } from "./practiceProgressTypes";
 import type { TriadInversion } from "../../data/triads";
 
@@ -46,21 +48,53 @@ export function getInversionProgress(
 }
 
 export interface PracticeLedgerEntry {
+  chord: string;
   inversion: TriadInversion;
   practisedAt: string;
+  stringGroup?: StringGroup;
 }
 
-export function getPracticeHistory(
-  chord: DiatonicChord,
-  stringGroup: StringGroup,
-  progress: PracticeProgressMap,
-): PracticeLedgerEntry[] {
-  return triadInversions.flatMap((inversion) => {
-    const prefix = `${getTargetPrefix(chord, stringGroup)}${inversion}`;
-    return getProgressRecordsForPrefix(progress, prefix).flatMap((record) =>
-      (record.history ?? []).map((entry) => ({ inversion, practisedAt: entry.practisedAt })),
-    );
+export function getPracticeHistory(progress: PracticeProgressMap): PracticeLedgerEntry[] {
+  return Object.values(progress).flatMap((record) => {
+    const target = parsePracticeTarget(record.targetId);
+    if (!target) return [];
+
+    return (record.history ?? []).map((entry) => ({
+      chord: formatChordSymbol(target.root, target.quality),
+      inversion: target.inversion,
+      practisedAt: entry.practisedAt,
+      stringGroup: target.stringGroup,
+    }));
   }).sort((left, right) => right.practisedAt.localeCompare(left.practisedAt));
+}
+
+function parsePracticeTarget(targetId: string): {
+  inversion: TriadInversion;
+  quality: ChordQuality;
+  root: string;
+  stringGroup?: StringGroup;
+} | null {
+  const [, , root, quality, stringGroup, inversion] = targetId.split(":");
+  if (!root || !isChordQuality(quality) || !isTriadInversion(inversion)) return null;
+
+  return {
+    inversion,
+    quality,
+    root,
+    stringGroup: isStringGroup(stringGroup) ? stringGroup : undefined,
+  };
+}
+
+function isChordQuality(value: string): value is ChordQuality {
+  return value === "major" || value === "minor" || value === "diminished";
+}
+
+function isStringGroup(value: string): value is StringGroup {
+  return ["123", "234", "345", "456"].includes(value);
+}
+
+function isTriadInversion(value: string): value is TriadInversion {
+  return triadInversions.includes(value as TriadInversion);
 }
 
 function getProgressRecordsForPrefix(progress: PracticeProgressMap, prefix: string): PracticeProgress[] {

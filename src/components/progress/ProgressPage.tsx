@@ -31,10 +31,9 @@ export function ProgressPage({ chords, progress, selectedKey }: ProgressPageProp
     [progress, selectedCell],
   );
   const practiceHistory = useMemo(
-    () => getPracticeHistory(selectedCell.chord, selectedCell.stringGroup, progress),
-    [progress, selectedCell],
+    () => getPracticeHistory(progress),
+    [progress],
   );
-  const groupedHistory = useMemo(() => groupHistoryByDate(practiceHistory), [practiceHistory]);
   const lifetimeSummaries = useMemo(
     () => summarizeLifetimeChordPractice(progress),
     [progress],
@@ -156,30 +155,33 @@ export function ProgressPage({ chords, progress, selectedKey }: ProgressPageProp
         </div>
 
         <div className="p-5">
-          <h4 className="text-xs font-bold uppercase tracking-[0.12em] text-zinc-500">Practice history</h4>
-          {groupedHistory.length === 0 ? (
+          <h4 className="text-xs font-bold uppercase tracking-[0.12em] text-zinc-500">Recent Practice</h4>
+          {practiceHistory.length === 0 ? (
             <p className="mt-5 rounded-md bg-zinc-50 px-4 py-6 text-center text-sm text-zinc-500">
               No journal entries yet. Your next +1 will appear here.
             </p>
           ) : (
-            <div className="mt-4 grid max-h-[560px] gap-5 overflow-y-auto pr-1">
-              {groupedHistory.map((group) => (
-                <section key={group.dateKey}>
-                  <h5 className="mb-2 text-sm font-black text-zinc-800">{formatHistoryDate(group.dateKey)}</h5>
-                  <ol className="grid gap-1">
-                    {group.entries.map((entry, index) => (
-                      <li className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-zinc-50" key={`${entry.practisedAt}-${index}`}>
-                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-teal-50 text-teal-700"><Check size={13} strokeWidth={3} /></span>
-                        <span className="flex-1 font-semibold text-zinc-700">{shortInversionLabel(entry.inversion)}</span>
-                        <time className="text-xs tabular-nums text-zinc-400" dateTime={entry.practisedAt}>
-                          {new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" }).format(new Date(entry.practisedAt))}
-                        </time>
-                      </li>
-                    ))}
-                  </ol>
-                </section>
+            <ol className="mt-4 grid max-h-[560px] gap-1 overflow-y-auto pr-1">
+              {practiceHistory.map((entry, index) => (
+                <li className="flex items-center gap-2 rounded-md px-2 py-2 text-sm hover:bg-zinc-50" key={`${entry.practisedAt}-${entry.chord}-${entry.inversion}-${index}`}>
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal-50 text-teal-700"><Check size={13} strokeWidth={3} /></span>
+                  <span className="min-w-0 flex-1 truncate font-semibold text-zinc-700">
+                    <span className="font-black text-zinc-900">{entry.chord}</span>
+                    <span className="mx-1.5 text-zinc-300">•</span>
+                    {shortInversionLabel(entry.inversion)}
+                    {entry.stringGroup && (
+                      <>
+                        <span className="mx-1.5 text-zinc-300">•</span>
+                        Strings {entry.stringGroup}
+                      </>
+                    )}
+                  </span>
+                  <time className="shrink-0 text-xs tabular-nums text-zinc-400" dateTime={entry.practisedAt}>
+                    {formatHistoryTimestamp(entry.practisedAt)}
+                  </time>
+                </li>
               ))}
-            </div>
+            </ol>
           )}
         </div>
       </aside>
@@ -197,25 +199,32 @@ function shortInversionLabel(inversion: PracticeLedgerEntry["inversion"]): strin
   return { root: "Root", first: "1st", second: "2nd" }[inversion];
 }
 
-function groupHistoryByDate(entries: PracticeLedgerEntry[]) {
-  const groups = new Map<string, PracticeLedgerEntry[]>();
-  entries.forEach((entry) => {
-    const dateKey = localDateKey(new Date(entry.practisedAt));
-    groups.set(dateKey, [...(groups.get(dateKey) ?? []), entry]);
-  });
-  return Array.from(groups, ([dateKey, groupedEntries]) => ({ dateKey, entries: groupedEntries }));
-}
-
 function localDateKey(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
-function formatHistoryDate(dateKey: string): string {
-  const date = new Date(`${dateKey}T12:00:00`);
+function formatHistoryTimestamp(practisedAt: string): string {
+  const date = new Date(practisedAt);
   const today = new Date();
+  const dateKey = localDateKey(date);
   const todayKey = localDateKey(today);
   const yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
-  if (dateKey === todayKey) return "Today";
-  if (dateKey === localDateKey(yesterday)) return "Yesterday";
-  return new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" }).format(date);
+  const time = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" }).format(date);
+
+  if (dateKey === todayKey) return `Today ${time}`;
+  if (dateKey === localDateKey(yesterday)) return `Yesterday ${time}`;
+
+  const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const startOfEntryDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const ageInDays = Math.floor((startOfToday.getTime() - startOfEntryDate.getTime()) / 86_400_000);
+
+  if (ageInDays >= 0 && ageInDays < 7) {
+    return new Intl.DateTimeFormat(undefined, { weekday: "short", day: "numeric", month: "short" }).format(date);
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    day: "numeric",
+    month: "short",
+    year: date.getFullYear() === today.getFullYear() ? undefined : "numeric",
+  }).format(date);
 }

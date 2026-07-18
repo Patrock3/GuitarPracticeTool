@@ -24,7 +24,7 @@ const tutorialSteps: TutorialStep[] = [
   {
     target: "view-toggle",
     title: "Choose a view",
-    description: "Use Triads to explore chord shapes, or switch to Scale to see notes across the fretboard.",
+    description: "Use Triads to explore chord shapes, or switch to Scale to learn note and interval patterns across the fretboard.",
   },
   {
     target: "harmonised-scale",
