@@ -1,36 +1,88 @@
 import { useState } from "react";
 import { ChevronRight } from "lucide-react";
 
+interface ConceptPoint {
+  label: string;
+  text: string;
+}
+
+interface ConceptGroup {
+  title: string;
+  description?: string;
+  points?: ConceptPoint[];
+  stringGroups?: Array<{ strings: string; notes: string }>;
+  inversions?: string[];
+}
+
 const welcomeContent = {
   title: "Welcome to Guitar Practice Tool",
   introduction: [
     "This tool is best suited for intermediate guitarists looking to move beyond open chords and barre chords, and develop a deeper understanding of harmony across the entire fretboard.",
-    "Welcome to Guitar Practice Tool for learning the guitar fretboard.",
-    "The focus of this application is on Triads, Scales and Harmony. Harmony can seem like a deep and intimidating topic at first, but routine practice, deliberate repetition and active thinking will gradually reinforce your understanding and help you become a more confident musician.",
-    "The interactive fretboard below is the core of the application. It allows you to quickly visualise triad and scale shapes in any key while manually tracking your practice progress over time.",
+    "The interactive fretboard below is the heart of the application. Use it to visualise triad and scale shapes in any key and track your practice over time.",
   ],
   sections: [
     {
       id: "key-concepts",
       title: "Key Concepts",
-      items: [
-        { text: "Simplified: Any chord can be played in 12 different triad shapes across the guitar fretboard." },
-        { text: "A triad is a three-note chord built from the 1st, 3rd and 5th degrees of a scale." },
-        { text: "Three notes are played across three adjacent strings." },
+      groups: [
         {
-          text: "The six guitar strings can therefore be divided into four string groups:",
-          children: ["EAD", "ADG", "DGB", "GBE"],
+          title: "Triads",
+          points: [
+            {
+              label: "Simplified:",
+              text: "Any chord can be played in 12 different triad shapes across the guitar fretboard.",
+            },
+            {
+              label: "Three notes:",
+              text: "A triad is built from the 1st, 3rd and 5th degrees of a scale.",
+            },
+            {
+              label: "One shape:",
+              text: "Each triad places three notes across three adjacent strings.",
+            },
+          ],
         },
         {
-          text: "Each string group contains three inversions of every triad:",
-          children: ["Root Position", "1st Inversion", "2nd Inversion"],
+          title: "String Groups",
+          description: "The six guitar strings divide into four adjacent three-string groups.",
+          stringGroups: [
+            { strings: "123", notes: "EAD" },
+            { strings: "234", notes: "ADG" },
+            { strings: "345", notes: "DGB" },
+            { strings: "456", notes: "GBE" },
+          ],
         },
-        { text: "To build confidence with harmony, practise every inversion across every string group." },
-        { text: "As you practise, pay attention to the inversion number and the lowest note (bass note) of each shape. This is one of the easiest ways to understand why each inversion has its name." },
-        { text: "Use the counters beside each string group to manually track your successful practice repetitions." },
-        { text: "Visit the Progress page to review your overall practice summary." },
-      ],
-      closing: "Now get practising! 🎸",
+        {
+          title: "Inversions",
+          description: "Every string group contains three inversions of each triad.",
+          inversions: ["Root Position", "1st Inversion", "2nd Inversion"],
+          points: [
+            {
+              label: "Listen and look:",
+              text: "Pay attention to the inversion number and the lowest note, or bass note, of each shape. This makes the inversion names easier to understand.",
+            },
+          ],
+        },
+        {
+          title: "Practice",
+          description: "Harmony can feel deep and intimidating at first. Routine practice, deliberate repetition and active thinking gradually build understanding and confidence.",
+          points: [
+            {
+              label: "Build coverage:",
+              text: "Practise every inversion across every string group.",
+            },
+            {
+              label: "Track repetitions:",
+              text: "Use the counters beside each string group to record successful attempts.",
+            },
+            {
+              label: "Review progress:",
+              text: "Visit the Progress page for your overall practice summary.",
+            },
+          ],
+        },
+      ] as ConceptGroup[],
+      closing: "Now get practising!",
     },
   ],
 };
@@ -73,20 +125,47 @@ export function WelcomeCard() {
                 id={contentId}
               >
                 <div className="overflow-hidden">
-                  <div className="px-3 pb-3 pl-8 pt-2 text-sm leading-6 text-zinc-600">
-                    <ul className="list-disc space-y-2 pl-5">
-                      {section.items.map((item) => (
-                        <li key={item.text}>
-                          {item.text}
-                          {item.children && (
-                            <ul className="mt-1 list-disc space-y-0.5 pl-5">
-                              {item.children.map((child) => <li key={child}>{child}</li>)}
+                  <div className="px-2 pb-3 pt-3 text-sm leading-6 text-zinc-600 sm:pl-8">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {section.groups.map((group) => (
+                        <section className="rounded-md border border-zinc-100 bg-zinc-50 p-4" key={group.title}>
+                          <h3 className="text-xs font-black uppercase tracking-[0.12em] text-teal-800">
+                            {group.title}
+                          </h3>
+                          {group.description && <p className="mt-2">{group.description}</p>}
+                          {group.stringGroups && (
+                            <dl className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-2 lg:grid-cols-4">
+                              {group.stringGroups.map((stringGroup) => (
+                                <div className="flex items-center gap-2 rounded border border-zinc-200 bg-white px-2.5 py-1.5" key={stringGroup.strings}>
+                                  <dt className="font-black tabular-nums text-zinc-900">{stringGroup.strings}</dt>
+                                  <dd className="text-zinc-500">— {stringGroup.notes}</dd>
+                                </div>
+                              ))}
+                            </dl>
+                          )}
+                          {group.inversions && (
+                            <ul className="mt-3 flex flex-wrap gap-2" aria-label="Triad inversions">
+                              {group.inversions.map((inversion) => (
+                                <li className="rounded border border-zinc-200 bg-white px-2.5 py-1 font-semibold text-zinc-700" key={inversion}>
+                                  {inversion}
+                                </li>
+                              ))}
                             </ul>
                           )}
-                        </li>
+                          {group.points && (
+                            <ul className="mt-3 grid gap-2.5">
+                              {group.points.map((point) => (
+                                <li key={point.label}>
+                                  <strong className="font-bold text-zinc-800">{point.label}</strong>{" "}
+                                  {point.text}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </section>
                       ))}
-                    </ul>
-                    <p className="mt-4 font-bold text-zinc-900">{section.closing}</p>
+                    </div>
+                    <p className="mt-5 font-bold text-zinc-900">{section.closing}</p>
                   </div>
                 </div>
               </div>
