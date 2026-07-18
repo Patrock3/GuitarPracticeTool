@@ -123,7 +123,10 @@ export function App() {
             onMarkPractised={markPractised}
             onUndoPractice={undoPractice}
             onStringGroupChange={setSelectedStringGroup}
-            onStartTutorial={() => setIsTutorialOpen(true)}
+            onStartTutorial={() => {
+              chooseVisualisationMode("triads");
+              setIsTutorialOpen(true);
+            }}
             progress={progress}
             progressByChord={progressByChord}
             selectedChord={selectedChord}
@@ -137,12 +140,10 @@ export function App() {
       </AppLayout>
       {isTutorialOpen && (
         <InteractiveTutorial
-          activePage={activePage}
           onClose={() => {
             setActivePage("practice");
             setIsTutorialOpen(false);
           }}
-          onShowPractice={() => setActivePage("practice")}
         />
       )}
     </>

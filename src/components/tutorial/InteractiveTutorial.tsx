@@ -2,9 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 
 interface InteractiveTutorialProps {
-  activePage: "practice" | "progress";
   onClose: () => void;
-  onShowPractice: () => void;
 }
 
 interface TutorialStep {
@@ -51,47 +49,31 @@ const tutorialSteps: TutorialStep[] = [
     description: "Select any chord in the Harmonised Scale. The fretboard updates to show that chord's triad shapes.",
   },
   {
-    targets: ["string-group-buttons"],
+    targets: ["practice-tracking"],
     title: "Explore string groups",
-    description: "The same triads can be practised across four adjacent string groups. Change the string group to practise the same chords in different areas of the fretboard.",
+    description: (
+      <>
+        <p>The same triads can be practised across four adjacent string groups. Change the string group to practise the same chords in different areas of the fretboard.</p>
+        <p className="mt-2">Use the <strong className="font-bold text-zinc-800">+1</strong> buttons to record completed repetitions for each inversion.</p>
+        <p className="mt-2">Every repetition is saved automatically so you can review your progress later.</p>
+      </>
+    ),
   },
   {
     targets: ["view-toggle"],
     title: "Switch between Triads and Scale",
     description: "Use Triads to explore chord shapes, or switch to Scale to learn note and interval patterns across the fretboard.",
   },
-  {
-    targets: ["practice-tracking", "progress-navigation"],
-    title: "Track your practice",
-    description: (
-      <>
-        <p>Use the <strong className="font-bold text-zinc-800">+1</strong> buttons to record completed repetitions.</p>
-        <p className="mt-2">Practice is tracked separately for every string group and inversion, allowing you to see exactly what you have practised over time.</p>
-        <p className="mt-2">When you are ready, open the <strong className="font-bold text-zinc-800">Progress</strong> page to review your overall practice history and analytics.</p>
-      </>
-    ),
-  },
 ];
-
-const progressReviewStep: TutorialStep = {
-  targets: [],
-  title: "Review your progress",
-  description: (
-    <>
-      <p>Every repetition you record is automatically added to the graph and database.</p>
-      <p className="mt-2">Visit the Progress page any time to review your practice history and track your improvement over time.</p>
-    </>
-  ),
-};
 
 const spotlightPadding = 6;
 
-export function InteractiveTutorial({ activePage, onClose, onShowPractice }: InteractiveTutorialProps) {
+export function InteractiveTutorial({ onClose }: InteractiveTutorialProps) {
   const [stepIndex, setStepIndex] = useState(0);
   const [targetRects, setTargetRects] = useState<TargetRect[]>([]);
   const popoverRef = useRef<HTMLDivElement>(null);
   const isFinalStep = stepIndex === tutorialSteps.length - 1;
-  const step = isFinalStep && activePage === "progress" ? progressReviewStep : tutorialSteps[stepIndex];
+  const step = tutorialSteps[stepIndex];
 
   useEffect(() => {
     const targets = findTutorialTargets(step.targets);
@@ -175,7 +157,7 @@ export function InteractiveTutorial({ activePage, onClose, onShowPractice }: Int
     top: targetRect.top - spotlightPadding,
     width: targetRect.width + spotlightPadding * 2,
   }));
-  const estimatedPopoverHeight = stepIndex <= 1 ? 270 : isFinalStep ? 320 : 210;
+  const estimatedPopoverHeight = stepIndex <= 1 || step.targets.includes("practice-tracking") ? 270 : 210;
   const popoverStyle = targetRects[0]
     ? getPopoverPosition(targetRects[0], estimatedPopoverHeight)
     : { left: "50%", top: "50%", transform: "translate(-50%, -50%)" };
@@ -224,7 +206,6 @@ export function InteractiveTutorial({ activePage, onClose, onShowPractice }: Int
                   onClose();
                   return;
                 }
-                if (isFinalStep) onShowPractice();
                 setStepIndex((current) => current - 1);
               }}
               type="button"

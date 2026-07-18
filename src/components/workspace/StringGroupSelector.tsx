@@ -56,7 +56,7 @@ export function StringGroupSelector({
       <h2 className="mb-3 text-sm font-bold uppercase tracking-[0.12em] text-zinc-700">
         String group
       </h2>
-      <div className="grid grid-cols-4 gap-2" data-tutorial-target="string-group-buttons">
+      <div className="grid grid-cols-4 gap-2">
         {numberedOptions.map((stringGroup) => renderOption(stringGroup))}
       </div>
       {showAllOption && <div className="mt-2">{renderOption("all", "w-full")}</div>}
