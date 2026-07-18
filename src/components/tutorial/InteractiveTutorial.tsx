@@ -23,7 +23,7 @@ interface TargetRect {
 const tutorialSteps: TutorialStep[] = [
   {
     targets: ["main-fretboard"],
-    title: "Your reference",
+    title: "Fretboard View",
     description: (
       <>
         <p>This fretboard is your reference while you practise.</p>
@@ -63,6 +63,25 @@ const tutorialSteps: TutorialStep[] = [
     targets: ["view-toggle"],
     title: "Switch between Triads and Scale",
     description: "Use Triads to explore chord shapes, or switch to Scale to learn note and interval patterns across the fretboard.",
+  },
+  {
+    targets: [],
+    title: "Done!",
+    description: (
+      <>
+        <p>Thanks for completing the tutorial.</p>
+        <p className="mt-2">You now know the basics of Guitar Lab:</p>
+        <ul className="mt-2 list-disc space-y-1 pl-5">
+          <li>Choose a key</li>
+          <li>Select chords from the Harmonised Scale</li>
+          <li>Practise across different string groups</li>
+          <li>Switch between the Triads and Scale views</li>
+        </ul>
+        <p className="mt-3">A good place to start is by choosing one key and working through each chord across all string groups. As you practise, focus on recognising the shapes and the notes that make up each chord.</p>
+        <p className="mt-3">When you're ready, explore the <strong className="font-bold text-zinc-800">Progress Tracker</strong> and <strong className="font-bold text-zinc-800">Chord Progression Builder</strong> to support your practice.</p>
+        <p className="mt-3">Enjoy your practice!</p>
+      </>
+    ),
   },
 ];
 
