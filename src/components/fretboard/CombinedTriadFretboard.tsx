@@ -79,7 +79,7 @@ export function CombinedTriadFretboard({ progression = [], renderMode = "triads"
   const visiblePositionFrets = positionFrets.filter((fret) => fret <= fretboardFretCount);
 
   return (
-    <section className="min-w-0 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-6">
+    <section className="min-w-0 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-6" data-tutorial-target="main-fretboard">
       <div className="mb-7 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
         <div className="min-w-0 flex-1">
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">Fretboard View</p>
@@ -142,7 +142,7 @@ export function CombinedTriadFretboard({ progression = [], renderMode = "triads"
 
       <div className="px-1 pb-2 sm:px-4">
         <div className="relative ml-7 sm:ml-10">
-          <div className="fretboard relative h-[250px] w-full rounded-r-lg sm:h-[300px]" aria-label={isProgression ? "Chord progression fretboard diagram" : isScaleMode ? `${scaleRoot ?? scaleNotes[0] ?? "Selected"} scale fretboard with ${scaleChordRoot ?? "selected chord"} chord tones highlighted` : `${shapes[0].chord.symbol} fretboard diagram`} data-tutorial-target="main-fretboard">
+          <div className="fretboard relative h-[250px] w-full rounded-r-lg sm:h-[300px]" aria-label={isProgression ? "Chord progression fretboard diagram" : isScaleMode ? `${scaleRoot ?? scaleNotes[0] ?? "Selected"} scale fretboard with ${scaleChordRoot ?? "selected chord"} chord tones highlighted` : `${shapes[0].chord.symbol} fretboard diagram`}>
             <div className="absolute inset-y-0 left-0 z-10 w-[5px] bg-[#302a24] shadow-[2px_0_3px_rgba(0,0,0,0.25)]" aria-hidden="true" />
 
             {Array.from({ length: fretboardFretCount }, (_, index) => index + 1).map((fret) => (
