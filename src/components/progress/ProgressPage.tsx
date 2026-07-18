@@ -97,7 +97,7 @@ export function ProgressPage({ chords, onKeyChange, progress }: ProgressPageProp
         summaries={lifetimeSummaries}
       />
 
-      <section className="grid gap-3" data-tutorial-target="progress-database">
+      <section className="grid gap-3">
         <div>
           <h2 className="text-xl font-black text-zinc-950">Progress Database</h2>
         </div>

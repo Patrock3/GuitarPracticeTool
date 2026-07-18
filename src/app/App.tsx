@@ -138,7 +138,10 @@ export function App() {
       {isTutorialOpen && (
         <InteractiveTutorial
           activePage={activePage}
-          onClose={() => setIsTutorialOpen(false)}
+          onClose={() => {
+            setActivePage("practice");
+            setIsTutorialOpen(false);
+          }}
           onShowPractice={() => setActivePage("practice")}
         />
       )}

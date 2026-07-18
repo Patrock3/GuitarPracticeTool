@@ -63,12 +63,12 @@ const tutorialSteps: TutorialStep[] = [
 ];
 
 const progressReviewStep: TutorialStep = {
-  targets: ["overall-practice-summary", "progress-database"],
+  targets: [],
   title: "Review your progress",
   description: (
     <>
-      <p>Your practice is automatically recorded here.</p>
-      <p className="mt-2">The Overall Practice Summary gives you a quick overview of your practice across all keys, while the Progress Database shows detailed counts for each chord, inversion and string group.</p>
+      <p>Every repetition you record is automatically added to the graph and database.</p>
+      <p className="mt-2">Visit the Progress page any time to review your practice history and track your improvement over time.</p>
     </>
   ),
 };
@@ -165,7 +165,9 @@ export function InteractiveTutorial({ activePage, onClose, onShowPractice }: Int
     width: targetRect.width + spotlightPadding * 2,
   }));
   const estimatedPopoverHeight = stepIndex === 0 ? 270 : isFinalStep ? 320 : 210;
-  const popoverStyle = targetRects[0] ? getPopoverPosition(targetRects[0], estimatedPopoverHeight) : undefined;
+  const popoverStyle = targetRects[0]
+    ? getPopoverPosition(targetRects[0], estimatedPopoverHeight)
+    : { left: "50%", top: "50%", transform: "translate(-50%, -50%)" };
   const backdropSections = targetRects.length > 0
     ? getBackdropSections(targetRects)
     : [{ inset: 0 } satisfies CSSProperties];

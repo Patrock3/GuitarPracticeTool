@@ -15,7 +15,7 @@ export function OverallPracticeSummary({ onSelect, selectedSegment, summaries }:
   );
 
   return (
-    <section className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm sm:p-5" data-tutorial-target="overall-practice-summary">
+    <section className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm sm:p-5">
       <div className="flex flex-wrap items-start justify-between gap-4 border-b border-zinc-100 pb-4">
         <div>
           <h2 className="text-lg font-black text-zinc-950">Overall Practice Summary</h2>
