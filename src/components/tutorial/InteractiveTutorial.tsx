@@ -46,11 +46,6 @@ const tutorialSteps: TutorialStep[] = [
     ),
   },
   {
-    targets: ["view-toggle"],
-    title: "Switch between Triads and Scale",
-    description: "Use Triads to explore chord shapes, or switch to Scale to learn note and interval patterns across the fretboard.",
-  },
-  {
     targets: ["harmonised-scale"],
     title: "Explore the Harmonised Scale",
     description: "Select any chord in the Harmonised Scale. The fretboard updates to show that chord's triad shapes.",
@@ -59,6 +54,11 @@ const tutorialSteps: TutorialStep[] = [
     targets: ["string-group-buttons"],
     title: "Explore string groups",
     description: "The same triads can be practised across four adjacent string groups. Change the string group to practise the same chords in different areas of the fretboard.",
+  },
+  {
+    targets: ["view-toggle"],
+    title: "Switch between Triads and Scale",
+    description: "Use Triads to explore chord shapes, or switch to Scale to learn note and interval patterns across the fretboard.",
   },
   {
     targets: ["practice-tracking", "progress-navigation"],
