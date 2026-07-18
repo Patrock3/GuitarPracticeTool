@@ -155,7 +155,11 @@ const welcomeContent = {
   ],
 };
 
-export function WelcomeCard() {
+interface WelcomeCardProps {
+  onStartTutorial: () => void;
+}
+
+export function WelcomeCard({ onStartTutorial }: WelcomeCardProps) {
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
 
   function toggleSection(sectionId: string) {
@@ -245,6 +249,16 @@ export function WelcomeCard() {
             </div>
           );
         })}
+        <div className="last:border-b-0">
+          <button
+            className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm font-bold text-zinc-700 transition hover:bg-zinc-50 hover:text-teal-800"
+            onClick={onStartTutorial}
+            type="button"
+          >
+            <ChevronRight aria-hidden="true" className="shrink-0" size={17} />
+            Interactive Tutorial
+          </button>
+        </div>
       </div>
     </section>
   );

@@ -91,7 +91,7 @@ export function CombinedTriadFretboard({ progression = [], renderMode = "triads"
     <section className="min-w-0 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-6">
       <div className="mb-7 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">{isProgression ? "Progression map" : "Combined inversion map"}</p>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">Fretboard View</p>
           <h3 className="mt-1 text-2xl font-black text-zinc-950">
             {isProgression ? progression.map((item) => item.chord.symbol).join(" → ") : shapes[0].chord.symbol} <span className="font-semibold text-zinc-400">/ strings {shapes[0].stringGroup}</span>
           </h3>
@@ -214,7 +214,6 @@ function LabelModeToggle({ labelMode, onChange }: { labelMode: FretboardLabelMod
   return (
     <fieldset className="flex items-center gap-2" aria-label="Fretboard label mode">
       <legend className="sr-only">Labels</legend>
-      <span className="mr-1 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-400">Labels</span>
       <div className="flex rounded-md border border-zinc-200 bg-zinc-50 p-0.5">
         {(["notes", "tab"] as const).map((mode) => (
           <button aria-pressed={labelMode === mode} className={`rounded px-2.5 py-1 text-xs font-bold transition ${labelMode === mode ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-400 hover:text-zinc-700"}`} key={mode} onClick={() => onChange(mode)} type="button">

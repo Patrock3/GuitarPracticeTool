@@ -15,7 +15,7 @@ export function HarmonisedScale({
   selectedChordId,
 }: HarmonisedScaleProps) {
   return (
-    <section className="rounded-md border border-zinc-200 bg-white p-4 shadow-sm">
+    <section className="rounded-md border border-zinc-200 bg-white p-4 shadow-sm" data-tutorial-target="harmonised-scale">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h2 className="text-sm font-bold uppercase tracking-[0.12em] text-zinc-700">
           Harmonised scale

@@ -12,13 +12,13 @@ interface KeySelectorProps {
 
 export function KeySelector({ compact = false, selectedKey, onChange, onRandom }: KeySelectorProps) {
   return (
-    <div className={compact ? "flex items-end gap-2" : "flex flex-col gap-3 sm:flex-row sm:items-end"}>
+    <div className={compact ? "flex items-center gap-2" : "flex flex-col gap-3 sm:flex-row sm:items-end"}>
       <label className="grid flex-1 gap-2">
         <span className={compact ? "sr-only" : "text-xs font-bold uppercase tracking-[0.12em] text-zinc-500"}>
           Key
         </span>
         <select
-          className={`${compact ? "h-10 min-w-32" : "h-11"} rounded-md border border-zinc-300 bg-white px-3 text-sm font-semibold text-zinc-950`}
+          className={`${compact ? "h-10 w-36" : "h-11"} rounded-md border border-zinc-300 bg-white px-3 text-sm font-semibold text-zinc-950`}
           value={selectedKey.id}
           onChange={(event) => onChange(musicalKeys.find((key) => key.id === event.target.value)!)}
         >
@@ -30,7 +30,7 @@ export function KeySelector({ compact = false, selectedKey, onChange, onRandom }
         </select>
       </label>
       <Button
-        className={compact ? "h-10 min-h-10 px-3" : ""}
+        className={compact ? "h-10 min-h-10 min-w-28 px-3" : ""}
         icon={<Shuffle size={17} aria-hidden="true" />}
         onClick={onRandom}
         variant="secondary"

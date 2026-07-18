@@ -31,7 +31,7 @@ export function StringGroupSelector({
   options = stringSets,
 }: StringGroupSelectorProps) {
   return (
-    <section className="rounded-md border border-zinc-200 bg-white p-4 shadow-sm">
+    <section className="rounded-md border border-zinc-200 bg-white p-4 shadow-sm" data-tutorial-target="string-groups">
       <h2 className="mb-3 text-sm font-bold uppercase tracking-[0.12em] text-zinc-700">
         String group
       </h2>

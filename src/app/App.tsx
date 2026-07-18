@@ -7,6 +7,7 @@ import { AppLayout } from "../components/layout/AppLayout";
 import { CombinedTriadFretboard } from "../components/fretboard/CombinedTriadFretboard";
 import { ProgressPage } from "../components/progress/ProgressPage";
 import { ProgressionBuilder } from "../components/progression/ProgressionBuilder";
+import { InteractiveTutorial } from "../components/tutorial/InteractiveTutorial";
 import { HarmonisedScale } from "../components/workspace/HarmonisedScale";
 import { StringGroupSelector } from "../components/workspace/StringGroupSelector";
 import { WelcomeCard } from "../components/workspace/WelcomeCard";
@@ -38,6 +39,7 @@ const defaultWorkspace = {
 export function App() {
   const persistedWorkspace = useMemo(() => loadWorkspaceState(defaultWorkspace), []);
   const [activePage, setActivePage] = useState<Page>("practice");
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [visualisationMode, setVisualisationMode] = useState<VisualisationMode>("triads");
   const [selectedKey, setSelectedKey] = useState<MusicalKey>(
     asMusicalKey(persistedWorkspace.selectedKey),
@@ -104,33 +106,37 @@ export function App() {
   }
 
   return (
-    <AppLayout
-      activePage={activePage}
-      selectedKey={selectedKey}
-      onKeyChange={chooseKey}
-      onPageChange={setActivePage}
-      onRandomKey={chooseRandomKey}
-      visualisationMode={visualisationMode}
-      onVisualisationModeChange={chooseVisualisationMode}
-    >
-      {activePage === "practice" ? (
-        <PracticeWorkspace
-          chords={chords}
-          onChordChange={chooseChord}
-          onMarkPractised={markPractised}
-          onUndoPractice={undoPractice}
-          onStringGroupChange={setSelectedStringGroup}
-          progress={progress}
-          progressByChord={progressByChord}
-          selectedChord={selectedChord}
-          selectedStringGroup={selectedStringGroup}
-          shapes={triadShapes}
-          visualisationMode={visualisationMode}
-        />
-      ) : (
-        <ProgressPage chords={chords} progress={progress} />
-      )}
-    </AppLayout>
+    <>
+      <AppLayout
+        activePage={activePage}
+        selectedKey={selectedKey}
+        onKeyChange={chooseKey}
+        onPageChange={setActivePage}
+        onRandomKey={chooseRandomKey}
+        visualisationMode={visualisationMode}
+        onVisualisationModeChange={chooseVisualisationMode}
+      >
+        {activePage === "practice" ? (
+          <PracticeWorkspace
+            chords={chords}
+            onChordChange={chooseChord}
+            onMarkPractised={markPractised}
+            onUndoPractice={undoPractice}
+            onStringGroupChange={setSelectedStringGroup}
+            onStartTutorial={() => setIsTutorialOpen(true)}
+            progress={progress}
+            progressByChord={progressByChord}
+            selectedChord={selectedChord}
+            selectedStringGroup={selectedStringGroup}
+            shapes={triadShapes}
+            visualisationMode={visualisationMode}
+          />
+        ) : (
+          <ProgressPage chords={chords} progress={progress} />
+        )}
+      </AppLayout>
+      {isTutorialOpen && <InteractiveTutorial onClose={() => setIsTutorialOpen(false)} />}
+    </>
   );
 }
 
@@ -140,6 +146,7 @@ interface PracticeWorkspaceProps {
   onMarkPractised: (targetId: string) => void;
   onUndoPractice: (targetId: string) => void;
   onStringGroupChange: (stringGroup: VisualStringGroup) => void;
+  onStartTutorial: () => void;
   progress: PracticeProgressMap;
   progressByChord: Record<string, { practised: number; total: number }>;
   selectedChord: DiatonicChord;
@@ -154,6 +161,7 @@ function PracticeWorkspace({
   onMarkPractised,
   onUndoPractice,
   onStringGroupChange,
+  onStartTutorial,
   progress,
   progressByChord,
   selectedChord,
@@ -230,7 +238,7 @@ function PracticeWorkspace({
   return (
     <div className="grid gap-4">
       <section className="grid gap-3">
-        <WelcomeCard />
+        <WelcomeCard onStartTutorial={onStartTutorial} />
         <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_260px]">
           <HarmonisedScale
             chords={chords}

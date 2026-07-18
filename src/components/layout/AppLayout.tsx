@@ -40,15 +40,16 @@ export function AppLayout({
               <h1 className="text-xl font-extrabold leading-tight text-zinc-950">Guitar Lab</h1>
             </div>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <fieldset aria-label="Visualisation mode">
-                <legend className="sr-only">Visualisation mode</legend>
-                <div className="flex h-10 rounded-md border border-zinc-200 bg-zinc-100 p-1">
+          <div className="flex flex-col gap-3 md:flex-row md:items-end md:gap-7 xl:gap-10">
+            <fieldset className="grid gap-1.5" aria-label="Visualisation mode" data-tutorial-target="view-toggle">
+              <legend className="text-[9px] font-bold uppercase tracking-[0.14em] text-zinc-400">
+                View
+              </legend>
+                <div className="grid h-10 grid-cols-2 rounded-md border border-zinc-200 bg-zinc-100 p-1">
                   {(["triads", "scale"] as const).map((mode) => (
                     <button
                       aria-pressed={visualisationMode === mode}
-                      className={`h-8 rounded px-3 text-xs font-bold capitalize transition ${visualisationMode === mode ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-400 hover:text-zinc-700"}`}
+                      className={`h-8 min-w-20 rounded px-3 text-xs font-bold capitalize transition ${visualisationMode === mode ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-400 hover:text-zinc-700"}`}
                       key={mode}
                       onClick={() => onVisualisationModeChange(mode)}
                       type="button"
@@ -57,7 +58,11 @@ export function AppLayout({
                     </button>
                   ))}
                 </div>
-              </fieldset>
+            </fieldset>
+            <div className="grid gap-1.5">
+              <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-zinc-400">
+                Key Selection
+              </span>
               <KeySelector
                 compact
                 selectedKey={selectedKey}
@@ -65,13 +70,18 @@ export function AppLayout({
                 onRandom={onRandomKey}
               />
             </div>
-            <nav className="flex gap-2">
-              <NavButton active={activePage === "practice"} onClick={() => onPageChange("practice")}>
-                Practice
-              </NavButton>
-              <NavButton active={activePage === "progress"} onClick={() => onPageChange("progress")}>
-                Progress
-              </NavButton>
+            <nav className="grid gap-1.5" aria-label="Session pages">
+              <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-zinc-400">
+                Session
+              </span>
+              <div className="flex gap-2">
+                <NavButton active={activePage === "practice"} onClick={() => onPageChange("practice")}>
+                  Practice
+                </NavButton>
+                <NavButton active={activePage === "progress"} onClick={() => onPageChange("progress")}>
+                  Progress
+                </NavButton>
+              </div>
             </nav>
           </div>
         </div>
@@ -90,7 +100,7 @@ interface NavButtonProps {
 function NavButton({ active, children, onClick }: NavButtonProps) {
   return (
     <button
-      className={`h-10 rounded-md px-4 text-sm font-bold transition ${
+      className={`h-10 w-24 rounded-md px-4 text-sm font-bold transition ${
         active ? "bg-zinc-950 text-white" : "bg-white text-zinc-700 ring-1 ring-zinc-200 hover:bg-zinc-50"
       }`}
       onClick={onClick}
