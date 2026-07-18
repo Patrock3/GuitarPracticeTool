@@ -1,17 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
 import { Check } from "lucide-react";
+import { musicalKeys } from "../../data/keys";
 import type { MusicalKey } from "../../data/keys";
 import type { StringGroup } from "../../data/stringSets";
 import { stringGroupColourClasses, stringSets } from "../../data/stringSets";
 import type { DiatonicChord } from "../../features/harmony/harmonyTypes";
+import type { ChordQuality } from "../../features/harmony/harmonyTypes";
+import { buildDiatonicScale } from "../../features/harmony/diatonicHarmony";
 import type { PracticeProgressMap } from "../../features/practice/practiceProgressTypes";
 import { summarizeLifetimeChordPractice } from "../../features/practice/practiceAnalytics";
+import type { LifetimeChordSummary } from "../../features/practice/practiceAnalytics";
 import { getInversionProgress, getPracticeHistory, summarizeChordStringGroup } from "../../features/practice/progressSummary";
 import type { PracticeLedgerEntry } from "../../features/practice/progressSummary";
 import { OverallPracticeSummary } from "./OverallPracticeSummary";
 
 interface ProgressPageProps {
   chords: DiatonicChord[];
+  onKeyChange: (key: MusicalKey) => void;
   progress: PracticeProgressMap;
   selectedKey: MusicalKey;
 }
@@ -21,7 +26,7 @@ interface SelectedCell {
   stringGroup: StringGroup;
 }
 
-export function ProgressPage({ chords, progress, selectedKey }: ProgressPageProps) {
+export function ProgressPage({ chords, onKeyChange, progress, selectedKey }: ProgressPageProps) {
   const [selectedCell, setSelectedCell] = useState<SelectedCell>(() => ({
     chord: chords[0],
     stringGroup: "123",
@@ -31,8 +36,13 @@ export function ProgressPage({ chords, progress, selectedKey }: ProgressPageProp
     [progress, selectedCell],
   );
   const practiceHistory = useMemo(
-    () => getPracticeHistory(progress),
-    [progress],
+    () => getPracticeHistory(progress).filter((entry) =>
+      entry.chordKey === selectedCell.chord.key
+      && entry.chordRoot === selectedCell.chord.root
+      && entry.chordQuality === selectedCell.chord.quality
+      && entry.stringGroup === selectedCell.stringGroup,
+    ),
+    [progress, selectedCell],
   );
   const lifetimeSummaries = useMemo(
     () => summarizeLifetimeChordPractice(progress),
@@ -44,6 +54,26 @@ export function ProgressPage({ chords, progress, selectedKey }: ProgressPageProp
       ? current
       : { chord: chords[0], stringGroup: current.stringGroup });
   }, [chords]);
+
+  function selectChartSegment(summary: LifetimeChordSummary, stringGroup: StringGroup) {
+    const chordInCurrentKey = chords.find((chord) =>
+      chord.root === summary.root && chord.quality === summary.quality,
+    );
+    if (chordInCurrentKey) {
+      setSelectedCell({ chord: chordInCurrentKey, stringGroup });
+      return;
+    }
+
+    const key = findPreferredKey(summary.root, summary.quality, stringGroup, progress);
+    if (!key) return;
+    const chord = buildDiatonicScale(key).find((candidate) =>
+      candidate.root === summary.root && candidate.quality === summary.quality,
+    );
+    if (!chord) return;
+
+    setSelectedCell({ chord, stringGroup });
+    onKeyChange(key);
+  }
 
   return (
     <div className="grid gap-5">
@@ -59,7 +89,14 @@ export function ProgressPage({ chords, progress, selectedKey }: ProgressPageProp
         </p>
       </header>
 
-      <OverallPracticeSummary summaries={lifetimeSummaries} />
+      <OverallPracticeSummary
+        onSelect={selectChartSegment}
+        selectedSegment={{
+          summaryId: `${selectedCell.chord.root}:${selectedCell.chord.quality}`,
+          stringGroup: selectedCell.stringGroup,
+        }}
+        summaries={lifetimeSummaries}
+      />
 
       <section className="grid gap-3">
         <div>
@@ -123,6 +160,7 @@ export function ProgressPage({ chords, progress, selectedKey }: ProgressPageProp
                                 ? "bg-teal-50 text-teal-900 hover:bg-teal-100"
                                 : "bg-zinc-100 text-zinc-500 hover:bg-zinc-200"
                           }`}
+                          aria-pressed={isSelected}
                           onClick={() => setSelectedCell({ chord, stringGroup })}
                         >
                           {summary.practiceCount}
@@ -139,7 +177,7 @@ export function ProgressPage({ chords, progress, selectedKey }: ProgressPageProp
 
       <aside className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
         <div className="border-b border-zinc-200 bg-zinc-50/70 p-5">
-          <p className="text-xs font-bold uppercase tracking-[0.12em] text-zinc-500">Practice journal</p>
+          <p className="text-xs font-bold uppercase tracking-[0.12em] text-zinc-500">Selected chord</p>
           <h3 className="mt-1 text-2xl font-black text-zinc-950">
             {selectedCell.chord.symbol} <span className="mx-1 text-zinc-300">•</span>{" "}
             <span className="text-base font-bold text-zinc-500">Strings {selectedCell.stringGroup}</span>
@@ -158,7 +196,7 @@ export function ProgressPage({ chords, progress, selectedKey }: ProgressPageProp
           <h4 className="text-xs font-bold uppercase tracking-[0.12em] text-zinc-500">Recent Practice</h4>
           {practiceHistory.length === 0 ? (
             <p className="mt-5 rounded-md bg-zinc-50 px-4 py-6 text-center text-sm text-zinc-500">
-              No journal entries yet. Your next +1 will appear here.
+              No practice recorded for this chord and string group yet.
             </p>
           ) : (
             <ol className="mt-4 grid max-h-[560px] gap-1 overflow-y-auto pr-1">
@@ -193,6 +231,35 @@ export function ProgressPage({ chords, progress, selectedKey }: ProgressPageProp
 
 function formatKeyLabel(key: MusicalKey): string {
   return `${key.tonic} ${key.quality === "major" ? "Major" : "Minor"}`;
+}
+
+function findPreferredKey(
+  root: string,
+  quality: ChordQuality,
+  stringGroup: StringGroup,
+  progress: PracticeProgressMap,
+): MusicalKey | null {
+  const countsByKey = new Map<string, number>();
+
+  Object.values(progress).forEach((record) => {
+    const [keyId, , targetRoot, targetQuality, targetStringGroup] = record.targetId.split(":");
+    if (targetRoot !== root || targetQuality !== quality || targetStringGroup !== stringGroup) return;
+    countsByKey.set(keyId, (countsByKey.get(keyId) ?? 0) + Math.max(0, record.practisedCount));
+  });
+
+  const practicedKeys = Array.from(countsByKey.entries())
+    .sort((left, right) => right[1] - left[1])
+    .flatMap(([keyId]) => {
+      const key = musicalKeys.find((candidate) => candidate.id === keyId);
+      return key ? [key] : [];
+    });
+  const compatibleKeys = musicalKeys.filter((key) =>
+    buildDiatonicScale(key).some((chord) => chord.root === root && chord.quality === quality),
+  );
+
+  return practicedKeys.find((key) => compatibleKeys.some((candidate) => candidate.id === key.id))
+    ?? compatibleKeys[0]
+    ?? null;
 }
 
 function shortInversionLabel(inversion: PracticeLedgerEntry["inversion"]): string {

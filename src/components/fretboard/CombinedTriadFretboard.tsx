@@ -5,7 +5,7 @@ import type { FretMarker, TriadShape } from "../../features/triads/triadTypes";
 import type { ProgressionShape } from "../../features/progression/progressionTypes";
 import { FretboardMarkerLabel } from "./FretboardMarkerLabel";
 import type { FretboardLabelMode } from "./FretboardMarkerLabel";
-import { ScaleFretboardLayer } from "./ScaleFretboardLayer";
+import { ScaleFretboardLayer, scaleChordToneStyles } from "./ScaleFretboardLayer";
 import type { VisualisationMode } from "../../features/visualisation/visualisationTypes";
 import type { VisualStringGroup } from "../../data/stringSets";
 import { fretboardFretCount, inversionStyles } from "./fretboardLayout";
@@ -14,6 +14,7 @@ interface CombinedTriadFretboardProps {
   shapes: TriadShape[];
   progression?: ProgressionShape[];
   renderMode?: VisualisationMode;
+  scaleChordRoot?: string;
   scaleNotes?: string[];
   scaleRoot?: string;
   scaleStringGroup?: VisualStringGroup;
@@ -30,7 +31,7 @@ interface CombinedMarker extends FretMarker {
   progressionIndex: number | null;
 }
 
-export function CombinedTriadFretboard({ progression = [], renderMode = "triads", scaleNotes = [], scaleRoot, scaleStringGroup, shapes }: CombinedTriadFretboardProps) {
+export function CombinedTriadFretboard({ progression = [], renderMode = "triads", scaleChordRoot, scaleNotes = [], scaleRoot, scaleStringGroup, shapes }: CombinedTriadFretboardProps) {
   const [focusedProgressionId, setFocusedProgressionId] = useState<number | null>(null);
   const [labelMode, setLabelMode] = useState<FretboardLabelMode>("notes");
 
@@ -98,6 +99,16 @@ export function CombinedTriadFretboard({ progression = [], renderMode = "triads"
                   ))}
               </div>
             )}
+            {isScaleMode && (
+              <div className="flex shrink-0 items-center gap-3" aria-label="Chord tone colour legend">
+                {scaleChordToneStyles.map((style) => (
+                  <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500" key={style.tone}>
+                    <span className={`h-2.5 w-2.5 rounded-full ${style.marker}`} aria-hidden="true" />
+                    {style.label}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
           {isProgression && (
             <div className="mt-3 flex flex-wrap items-center gap-1.5" aria-label="Progression sequence">
@@ -126,7 +137,7 @@ export function CombinedTriadFretboard({ progression = [], renderMode = "triads"
 
       <div className="px-1 pb-2 sm:px-4">
         <div className="relative ml-7 sm:ml-10">
-          <div className="fretboard relative h-[250px] w-full rounded-r-lg sm:h-[300px]" aria-label={isProgression ? "Chord progression fretboard diagram" : isScaleMode ? `${scaleRoot ?? scaleNotes[0] ?? "Selected"} scale fretboard diagram` : `${shapes[0].chord.symbol} fretboard diagram`}>
+          <div className="fretboard relative h-[250px] w-full rounded-r-lg sm:h-[300px]" aria-label={isProgression ? "Chord progression fretboard diagram" : isScaleMode ? `${scaleRoot ?? scaleNotes[0] ?? "Selected"} scale fretboard with ${scaleChordRoot ?? "selected chord"} chord tones highlighted` : `${shapes[0].chord.symbol} fretboard diagram`}>
             <div className="absolute inset-y-0 left-0 z-10 w-[5px] bg-[#302a24] shadow-[2px_0_3px_rgba(0,0,0,0.25)]" aria-hidden="true" />
 
             {Array.from({ length: fretboardFretCount }, (_, index) => index + 1).map((fret) => (
@@ -172,6 +183,7 @@ export function CombinedTriadFretboard({ progression = [], renderMode = "triads"
 
             {isScaleMode && (
               <ScaleFretboardLayer
+                chordRoot={scaleChordRoot}
                 labelMode={labelMode}
                 notes={scaleNotes}
                 stringGroup={displayStringGroup}

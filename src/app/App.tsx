@@ -132,10 +132,15 @@ export function App() {
             visualisationMode={visualisationMode}
           />
         ) : (
-          <ProgressPage chords={chords} progress={progress} selectedKey={selectedKey} />
+          <ProgressPage chords={chords} onKeyChange={chooseKey} progress={progress} selectedKey={selectedKey} />
         )}
       </AppLayout>
-      {isTutorialOpen && <InteractiveTutorial onClose={() => setIsTutorialOpen(false)} />}
+      {isTutorialOpen && (
+        <InteractiveTutorial
+          onClose={() => setIsTutorialOpen(false)}
+          onShowPractice={() => setActivePage("practice")}
+        />
+      )}
     </>
   );
 }
@@ -270,6 +275,7 @@ function PracticeWorkspace({
           progression={visualisationMode === "triads" ? progressionShapes : []}
           renderMode={visualisationMode}
           scaleNotes={chords.map((chord) => chord.root)}
+          scaleChordRoot={selectedChord.root}
           scaleRoot={chords[0].root}
           scaleStringGroup={selectedStringGroup}
           shapes={fretboardShapes}

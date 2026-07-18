@@ -52,11 +52,11 @@ export function StringGroupSelector({
   }
 
   return (
-    <section className="h-full min-h-[250px] rounded-md border border-zinc-200 bg-white p-4 shadow-sm" data-tutorial-target="string-groups">
+    <section className="h-full min-h-[250px] rounded-md border border-zinc-200 bg-white p-4 shadow-sm" data-tutorial-target="practice-tracking">
       <h2 className="mb-3 text-sm font-bold uppercase tracking-[0.12em] text-zinc-700">
         String group
       </h2>
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-4 gap-2" data-tutorial-target="string-group-buttons">
         {numberedOptions.map((stringGroup) => renderOption(stringGroup))}
       </div>
       {showAllOption && <div className="mt-2">{renderOption("all", "w-full")}</div>}

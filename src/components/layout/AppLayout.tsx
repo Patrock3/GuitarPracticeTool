@@ -35,7 +35,7 @@ export function AppLayout({
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal-700/70">
-                Triad Coverage
+                Harmony Explorer
               </p>
               <h1 className="text-xl font-extrabold leading-tight text-zinc-950">Guitar Lab</h1>
             </div>
@@ -78,7 +78,7 @@ export function AppLayout({
                 <NavButton active={activePage === "practice"} onClick={() => onPageChange("practice")}>
                   Practice
                 </NavButton>
-                <NavButton active={activePage === "progress"} onClick={() => onPageChange("progress")}>
+                <NavButton active={activePage === "progress"} onClick={() => onPageChange("progress")} tutorialTarget="progress-navigation">
                   Progress
                 </NavButton>
               </div>
@@ -95,14 +95,16 @@ interface NavButtonProps {
   active: boolean;
   children: ReactNode;
   onClick: () => void;
+  tutorialTarget?: string;
 }
 
-function NavButton({ active, children, onClick }: NavButtonProps) {
+function NavButton({ active, children, onClick, tutorialTarget }: NavButtonProps) {
   return (
     <button
       className={`h-10 w-24 rounded-md px-4 text-sm font-bold transition ${
         active ? "bg-zinc-950 text-white" : "bg-white text-zinc-700 ring-1 ring-zinc-200 hover:bg-zinc-50"
       }`}
+      data-tutorial-target={tutorialTarget}
       onClick={onClick}
     >
       {children}

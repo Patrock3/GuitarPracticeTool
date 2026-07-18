@@ -12,7 +12,7 @@ interface KeySelectorProps {
 
 export function KeySelector({ compact = false, selectedKey, onChange, onRandom }: KeySelectorProps) {
   return (
-    <div className={compact ? "flex items-center gap-2" : "flex flex-col gap-3 sm:flex-row sm:items-end"}>
+    <div className={compact ? "flex items-center gap-2" : "flex flex-col gap-3 sm:flex-row sm:items-end"} data-tutorial-target="key-selection-controls">
       <label className="grid flex-1 gap-2">
         <span className={compact ? "sr-only" : "text-xs font-bold uppercase tracking-[0.12em] text-zinc-500"}>
           Key

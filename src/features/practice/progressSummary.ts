@@ -49,6 +49,9 @@ export function getInversionProgress(
 
 export interface PracticeLedgerEntry {
   chord: string;
+  chordKey: string;
+  chordQuality: ChordQuality;
+  chordRoot: string;
   inversion: TriadInversion;
   practisedAt: string;
   stringGroup?: StringGroup;
@@ -61,6 +64,9 @@ export function getPracticeHistory(progress: PracticeProgressMap): PracticeLedge
 
     return (record.history ?? []).map((entry) => ({
       chord: formatChordSymbol(target.root, target.quality),
+      chordKey: target.key,
+      chordQuality: target.quality,
+      chordRoot: target.root,
       inversion: target.inversion,
       practisedAt: entry.practisedAt,
       stringGroup: target.stringGroup,
@@ -70,15 +76,17 @@ export function getPracticeHistory(progress: PracticeProgressMap): PracticeLedge
 
 function parsePracticeTarget(targetId: string): {
   inversion: TriadInversion;
+  key: string;
   quality: ChordQuality;
   root: string;
   stringGroup?: StringGroup;
 } | null {
-  const [, , root, quality, stringGroup, inversion] = targetId.split(":");
-  if (!root || !isChordQuality(quality) || !isTriadInversion(inversion)) return null;
+  const [key, , root, quality, stringGroup, inversion] = targetId.split(":");
+  if (!key || !root || !isChordQuality(quality) || !isTriadInversion(inversion)) return null;
 
   return {
     inversion,
+    key,
     quality,
     root,
     stringGroup: isStringGroup(stringGroup) ? stringGroup : undefined,

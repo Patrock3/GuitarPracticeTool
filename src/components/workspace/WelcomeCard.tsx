@@ -25,7 +25,7 @@ interface LearningSection {
 }
 
 const welcomeContent = {
-  title: "Welcome to Guitar Lab",
+  title: "Getting Started",
   introduction: [
     "This tool is best suited for intermediate guitarists looking to move beyond basic chords and pentatonics, and develop a deeper understanding of harmony across the entire fretboard.",
     "The interactive fretboard below is the heart of the application. Use it to visualise triad and scale shapes in any key and track your practice over time.",

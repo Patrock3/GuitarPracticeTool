@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 interface InteractiveTutorialProps {
   onClose: () => void;
+  onShowPractice: () => void;
 }
 
 interface TutorialStep {
-  target: string;
+  targets: string[];
   title: string;
-  description: string;
+  description: ReactNode;
 }
 
 interface TargetRect {
@@ -22,65 +23,95 @@ interface TargetRect {
 
 const tutorialSteps: TutorialStep[] = [
   {
-    target: "view-toggle",
-    title: "Choose a view",
+    targets: ["key-selection-controls"],
+    title: "Choose a key",
+    description: (
+      <>
+        <p>Select a major key to practise.</p>
+        <p className="mt-2">Changing the key updates the harmonised scale, triads, fretboard and practice data.</p>
+        <p className="mt-2">You can also use <strong className="font-bold text-zinc-800">Random</strong> to quickly choose a key for practice.</p>
+      </>
+    ),
+  },
+  {
+    targets: ["view-toggle"],
+    title: "Switch between Triads and Scale",
     description: "Use Triads to explore chord shapes, or switch to Scale to learn note and interval patterns across the fretboard.",
   },
   {
-    target: "harmonised-scale",
-    title: "Choose a chord",
+    targets: ["harmonised-scale"],
+    title: "Explore the Harmonised Scale",
     description: "Select any chord in the Harmonised Scale. The fretboard updates to show that chord's triad shapes.",
   },
   {
-    target: "string-groups",
+    targets: ["string-group-buttons"],
     title: "Explore string groups",
-    description: "Change the string group to see the same triads on different sets of adjacent strings.",
+    description: "The same triads can be practised across four adjacent string groups. Change the string group to practise the same chords in different areas of the fretboard.",
+  },
+  {
+    targets: ["practice-tracking", "progress-navigation"],
+    title: "Track your practice",
+    description: (
+      <>
+        <p>Use the <strong className="font-bold text-zinc-800">+1</strong> buttons to record completed repetitions.</p>
+        <p className="mt-2">Practice is tracked separately for every string group and inversion, allowing you to see exactly what you have practised over time.</p>
+        <p className="mt-2">When you are ready, open the <strong className="font-bold text-zinc-800">Progress</strong> page to review your overall practice history and analytics.</p>
+      </>
+    ),
   },
 ];
 
 const spotlightPadding = 6;
 
-export function InteractiveTutorial({ onClose }: InteractiveTutorialProps) {
+export function InteractiveTutorial({ onClose, onShowPractice }: InteractiveTutorialProps) {
   const [stepIndex, setStepIndex] = useState(0);
-  const [targetRect, setTargetRect] = useState<TargetRect | null>(null);
+  const [targetRects, setTargetRects] = useState<TargetRect[]>([]);
   const popoverRef = useRef<HTMLDivElement>(null);
   const step = tutorialSteps[stepIndex];
 
   useEffect(() => {
-    const target = document.querySelector<HTMLElement>(`[data-tutorial-target="${step.target}"]`);
-    if (!target) return;
-
-    setTargetRect(null);
-    target.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
-
-    function updateTargetRect() {
-      const rect = target!.getBoundingClientRect();
-      setTargetRect({
-        bottom: rect.bottom,
-        height: rect.height,
-        left: rect.left,
-        right: rect.right,
-        top: rect.top,
-        width: rect.width,
-      });
+    const targets = findTutorialTargets(step.targets);
+    if (targets.length === 0) {
+      setTargetRects([]);
+      return;
     }
 
-    updateTargetRect();
-    const settleTimer = window.setTimeout(updateTargetRect, 350);
+    setTargetRects([]);
+    targets[0].scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+
+    function updateTargetRects() {
+      setTargetRects(targets.filter((target) => target.isConnected).map((target) => {
+        const rect = target.getBoundingClientRect();
+        return {
+          bottom: rect.bottom,
+          height: rect.height,
+          left: rect.left,
+          right: rect.right,
+          top: rect.top,
+          width: rect.width,
+        };
+      }));
+    }
+
+    updateTargetRects();
+    const settleTimer = window.setTimeout(updateTargetRects, 350);
     const resizeObserver = typeof ResizeObserver === "undefined"
       ? null
-      : new ResizeObserver(updateTargetRect);
-    resizeObserver?.observe(target);
-    window.addEventListener("resize", updateTargetRect);
-    window.addEventListener("scroll", updateTargetRect, true);
+      : new ResizeObserver(updateTargetRects);
+    const mutationObserver = new MutationObserver(updateTargetRects);
+    targets.forEach((target) => resizeObserver?.observe(target));
+    mutationObserver.observe(document.body, { childList: true, subtree: true });
+    window.addEventListener("resize", updateTargetRects);
+    window.addEventListener("scroll", updateTargetRects, true);
 
     return () => {
       window.clearTimeout(settleTimer);
+      mutationObserver.disconnect();
       resizeObserver?.disconnect();
-      window.removeEventListener("resize", updateTargetRect);
-      window.removeEventListener("scroll", updateTargetRect, true);
+      window.removeEventListener("resize", updateTargetRects);
+      window.removeEventListener("scroll", updateTargetRects, true);
     };
-  }, [step.target]);
+  }, [stepIndex, step.targets]);
 
   useEffect(() => {
     popoverRef.current?.focus();
@@ -95,9 +126,9 @@ export function InteractiveTutorial({ onClose }: InteractiveTutorialProps) {
 
       if (event.key !== "Tab") return;
 
-      const target = document.querySelector<HTMLElement>(`[data-tutorial-target="${step.target}"]`);
+      const targets = findTutorialTargets(step.targets);
       const focusable = [
-        ...getFocusableElements(target),
+        ...targets.flatMap(getFocusableElements),
         ...getFocusableElements(popoverRef.current),
       ];
       if (focusable.length === 0) return;
@@ -112,19 +143,20 @@ export function InteractiveTutorial({ onClose }: InteractiveTutorialProps) {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose, step.target]);
+  }, [onClose, step.targets]);
 
-  const spotlightStyle = targetRect ? {
+  const isFinalStep = stepIndex === tutorialSteps.length - 1;
+  const spotlightStyles = targetRects.map((targetRect) => ({
     height: targetRect.height + spotlightPadding * 2,
     left: targetRect.left - spotlightPadding,
     top: targetRect.top - spotlightPadding,
     width: targetRect.width + spotlightPadding * 2,
-  } : undefined;
-  const popoverStyle = targetRect ? getPopoverPosition(targetRect) : undefined;
-  const backdropSections = targetRect
-    ? getBackdropSections(targetRect)
+  }));
+  const estimatedPopoverHeight = stepIndex === 0 ? 270 : isFinalStep ? 320 : 210;
+  const popoverStyle = targetRects[0] ? getPopoverPosition(targetRects[0], estimatedPopoverHeight) : undefined;
+  const backdropSections = targetRects.length > 0
+    ? getBackdropSections(targetRects)
     : [{ inset: 0 } satisfies CSSProperties];
-  const isFinalStep = stepIndex === tutorialSteps.length - 1;
 
   return (
     <div className="pointer-events-none fixed inset-0 z-50">
@@ -136,16 +168,17 @@ export function InteractiveTutorial({ onClose }: InteractiveTutorialProps) {
           style={style}
         />
       ))}
-      {targetRect && (
+      {spotlightStyles.map((style, index) => (
         <div
           className="pointer-events-none fixed rounded-lg border-2 border-teal-400 shadow-[0_0_0_4px_rgba(20,184,166,0.2)] transition-[left,top,width,height] duration-200"
-          style={spotlightStyle}
+          key={step.targets[index]}
+          style={style}
         />
-      )}
+      ))}
 
       <div
         aria-labelledby="tutorial-title"
-        className="pointer-events-auto fixed w-[min(20rem,calc(100vw-2rem))] rounded-lg border border-zinc-200 bg-white p-4 shadow-2xl outline-none"
+        className="pointer-events-auto fixed max-h-[calc(100vh-2rem)] w-[min(20rem,calc(100vw-2rem))] overflow-y-auto rounded-lg border border-zinc-200 bg-white p-4 shadow-2xl outline-none"
         ref={popoverRef}
         role="dialog"
         style={popoverStyle}
@@ -155,17 +188,23 @@ export function InteractiveTutorial({ onClose }: InteractiveTutorialProps) {
           Step {stepIndex + 1} of {tutorialSteps.length}
         </p>
         <h2 className="mt-1 text-lg font-black text-zinc-950" id="tutorial-title">{step.title}</h2>
-        <p className="mt-2 text-sm leading-6 text-zinc-600">{step.description}</p>
+        <div className="mt-2 text-sm leading-6 text-zinc-600">{step.description}</div>
 
         <div className="mt-4 flex items-center justify-end gap-3 border-t border-zinc-100 pt-3">
           <div className="flex gap-2">
             <button
               className="h-9 rounded-md border border-zinc-200 bg-white px-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40"
-              disabled={stepIndex === 0}
-              onClick={() => setStepIndex((current) => current - 1)}
+              onClick={() => {
+                if (stepIndex === 0) {
+                  onClose();
+                  return;
+                }
+                if (isFinalStep) onShowPractice();
+                setStepIndex((current) => current - 1);
+              }}
               type="button"
             >
-              Previous
+              {stepIndex === 0 ? "Skip" : "Previous"}
             </button>
             <button
               className="h-9 rounded-md bg-teal-700 px-4 text-sm font-bold text-white transition hover:bg-teal-800"
@@ -181,19 +220,43 @@ export function InteractiveTutorial({ onClose }: InteractiveTutorialProps) {
   );
 }
 
-function getBackdropSections(targetRect: TargetRect): CSSProperties[] {
-  const holeTop = Math.max(0, targetRect.top);
-  const holeBottom = Math.min(window.innerHeight, targetRect.bottom);
-  const holeLeft = Math.max(0, targetRect.left);
-  const holeRight = Math.min(window.innerWidth, targetRect.right);
-  const holeHeight = Math.max(0, holeBottom - holeTop);
+function getBackdropSections(targetRects: TargetRect[]): CSSProperties[] {
+  const holes = targetRects.flatMap((rect) => {
+    const left = Math.max(0, Math.min(window.innerWidth, rect.left));
+    const right = Math.max(0, Math.min(window.innerWidth, rect.right));
+    const top = Math.max(0, Math.min(window.innerHeight, rect.top));
+    const bottom = Math.max(0, Math.min(window.innerHeight, rect.bottom));
+    return right > left && bottom > top ? [{ bottom, left, right, top }] : [];
+  });
+  if (holes.length === 0) return [{ inset: 0 }];
 
-  return [
-    { height: holeTop, left: 0, right: 0, top: 0 },
-    { bottom: 0, left: 0, right: 0, top: holeBottom },
-    { height: holeHeight, left: 0, top: holeTop, width: holeLeft },
-    { height: holeHeight, left: holeRight, right: 0, top: holeTop },
-  ];
+  const xBoundaries = uniqueSorted([0, window.innerWidth, ...holes.flatMap((hole) => [hole.left, hole.right])]);
+  const yBoundaries = uniqueSorted([0, window.innerHeight, ...holes.flatMap((hole) => [hole.top, hole.bottom])]);
+  const sections: CSSProperties[] = [];
+
+  for (let xIndex = 0; xIndex < xBoundaries.length - 1; xIndex += 1) {
+    for (let yIndex = 0; yIndex < yBoundaries.length - 1; yIndex += 1) {
+      const left = xBoundaries[xIndex];
+      const right = xBoundaries[xIndex + 1];
+      const top = yBoundaries[yIndex];
+      const bottom = yBoundaries[yIndex + 1];
+      const centreX = (left + right) / 2;
+      const centreY = (top + bottom) / 2;
+      const isInsideSpotlight = holes.some((hole) =>
+        centreX >= hole.left && centreX <= hole.right && centreY >= hole.top && centreY <= hole.bottom,
+      );
+
+      if (!isInsideSpotlight) {
+        sections.push({ height: bottom - top, left, top, width: right - left });
+      }
+    }
+  }
+
+  return sections;
+}
+
+function uniqueSorted(values: number[]): number[] {
+  return Array.from(new Set(values)).sort((left, right) => left - right);
 }
 
 function getFocusableElements(container: HTMLElement | null): HTMLElement[] {
@@ -204,11 +267,17 @@ function getFocusableElements(container: HTMLElement | null): HTMLElement[] {
   ));
 }
 
-function getPopoverPosition(targetRect: TargetRect) {
+function findTutorialTargets(targetNames: string[]): HTMLElement[] {
+  return targetNames.flatMap((targetName) => {
+    const target = document.querySelector<HTMLElement>(`[data-tutorial-target="${targetName}"]`);
+    return target ? [target] : [];
+  });
+}
+
+function getPopoverPosition(targetRect: TargetRect, estimatedPopoverHeight: number) {
   const viewportPadding = 16;
   const targetGap = 16;
   const popoverWidth = Math.min(320, window.innerWidth - viewportPadding * 2);
-  const estimatedPopoverHeight = 210;
   const hasRoomBelow = window.innerHeight - targetRect.bottom >= estimatedPopoverHeight + targetGap;
   const preferredTop = hasRoomBelow
     ? targetRect.bottom + targetGap
