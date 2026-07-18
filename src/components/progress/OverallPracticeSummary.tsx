@@ -20,7 +20,7 @@ export function OverallPracticeSummary({ onSelect, selectedSegment, summaries }:
         <div>
           <h2 className="text-lg font-black text-zinc-950">Overall Practice Summary</h2>
           <p className="mt-1 text-sm text-zinc-600">
-            Lifetime practice counts for every chord, combined across all keys.
+            Shows practice counts for every chord, combined across all keys.
           </p>
         </div>
         <ul className="flex flex-wrap items-center gap-x-4 gap-y-2" aria-label="String group colours">

@@ -84,7 +84,7 @@ export function ProgressPage({ chords, onKeyChange, progress }: ProgressPageProp
           </span>
         </h1>
         <p className="mt-1 text-sm text-zinc-600">
-          Review your lifetime practice patterns and drill into exact counts for the current key.
+          Review your total practice counts
         </p>
       </header>
 
