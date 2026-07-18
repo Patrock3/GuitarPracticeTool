@@ -34,36 +34,37 @@ export function AppLayout({
               <Guitar size={22} aria-hidden="true" />
             </div>
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-teal-800">
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal-700/70">
                 Triad Coverage
               </p>
-              <h1 className="text-lg font-bold text-zinc-950">Guitar Practice Tool</h1>
+              <h1 className="text-xl font-extrabold leading-tight text-zinc-950">Guitar Lab</h1>
             </div>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <fieldset className="flex items-center gap-2" aria-label="Visualisation mode">
-              <legend className="sr-only">View</legend>
-              <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-400">View</span>
-              <div className="flex rounded-md border border-zinc-200 bg-zinc-100 p-0.5">
-                {(["triads", "scale"] as const).map((mode) => (
-                  <button
-                    aria-pressed={visualisationMode === mode}
-                    className={`rounded px-2.5 py-1.5 text-xs font-bold capitalize transition ${visualisationMode === mode ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-400 hover:text-zinc-700"}`}
-                    key={mode}
-                    onClick={() => onVisualisationModeChange(mode)}
-                    type="button"
-                  >
-                    {mode}
-                  </button>
-                ))}
-              </div>
-            </fieldset>
-            <KeySelector
-              compact
-              selectedKey={selectedKey}
-              onChange={onKeyChange}
-              onRandom={onRandomKey}
-            />
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <fieldset aria-label="Visualisation mode">
+                <legend className="sr-only">Visualisation mode</legend>
+                <div className="flex h-10 rounded-md border border-zinc-200 bg-zinc-100 p-1">
+                  {(["triads", "scale"] as const).map((mode) => (
+                    <button
+                      aria-pressed={visualisationMode === mode}
+                      className={`h-8 rounded px-3 text-xs font-bold capitalize transition ${visualisationMode === mode ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-400 hover:text-zinc-700"}`}
+                      key={mode}
+                      onClick={() => onVisualisationModeChange(mode)}
+                      type="button"
+                    >
+                      {mode}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+              <KeySelector
+                compact
+                selectedKey={selectedKey}
+                onChange={onKeyChange}
+                onRandom={onRandomKey}
+              />
+            </div>
             <nav className="flex gap-2">
               <NavButton active={activePage === "practice"} onClick={() => onPageChange("practice")}>
                 Practice

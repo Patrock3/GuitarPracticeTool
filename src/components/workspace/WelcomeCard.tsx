@@ -15,7 +15,7 @@ interface ConceptGroup {
 }
 
 const welcomeContent = {
-  title: "Welcome to Guitar Practice Tool",
+  title: "Welcome to Guitar Lab",
   introduction: [
     "This tool is best suited for intermediate guitarists looking to move beyond basic chords and pentatonics, and develop a deeper understanding of harmony across the entire fretboard.",
     "The interactive fretboard below is the heart of the application. Use it to visualise triad and scale shapes in any key and track your practice over time.",
@@ -82,7 +82,6 @@ const welcomeContent = {
           ],
         },
       ] as ConceptGroup[],
-      closing: "Now get practising!",
     },
     {
       id: "what-is-harmony",
@@ -104,7 +103,7 @@ const welcomeContent = {
         },
         {
           title: "From Scale to Chords",
-          description: "A major scale is more than a sequence of notes. Each scale degree can become the root of a chord using only notes from that key.",
+          description: "The major scale is the foundation of harmony. The Harmonised Scale card below shows the chords that naturally occur in each key. Learning the major scale makes it much easier to understand other scales, chord progressions and harmony.",
           points: [
             {
               label: "A natural chord family:",
@@ -152,7 +151,6 @@ const welcomeContent = {
           ],
         },
       ] as ConceptGroup[],
-      closing: "Listen for these connections in music you already know.",
     },
   ],
 };
@@ -241,7 +239,6 @@ export function WelcomeCard() {
                         </section>
                       ))}
                     </div>
-                    <p className="mt-5 font-bold text-zinc-900">{section.closing}</p>
                   </div>
                 </div>
               </div>

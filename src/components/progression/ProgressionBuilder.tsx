@@ -60,7 +60,12 @@ export function ProgressionBuilder({ canUndoClear, canUndoSuggestion, chords, it
     <section className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-sm font-black uppercase tracking-[0.12em] text-zinc-800">Progression Builder</h2>
+          <h2 className="flex items-center gap-2 text-sm font-black uppercase tracking-[0.12em] text-zinc-800">
+            Progression Builder
+            <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-bold tracking-[0.1em] text-amber-700 ring-1 ring-inset ring-amber-200">
+              Beta
+            </span>
+          </h2>
           <p className="mt-1 text-xs text-zinc-500">Choose each chord and inversion manually.</p>
         </div>
         {items.length === 0 && canUndoClear && (

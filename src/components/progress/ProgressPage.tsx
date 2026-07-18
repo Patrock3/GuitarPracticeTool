@@ -36,7 +36,12 @@ export function ProgressPage({ chords, progress }: ProgressPageProps) {
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_400px]">
       <section className="rounded-md border border-zinc-200 bg-white p-4 shadow-sm">
         <div className="mb-4">
-          <h2 className="text-xl font-black text-zinc-950">Progress database</h2>
+          <h2 className="flex items-center gap-2 text-xl font-black text-zinc-950">
+            Progress database
+            <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] text-amber-700 ring-1 ring-inset ring-amber-200">
+              Beta
+            </span>
+          </h2>
           <p className="mt-1 text-sm text-zinc-600">
             Counts show total practices across the three inversions for each chord and string group.
           </p>
