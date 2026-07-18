@@ -24,6 +24,17 @@ interface TargetRect {
 
 const tutorialSteps: TutorialStep[] = [
   {
+    targets: ["main-fretboard"],
+    title: "Your reference",
+    description: (
+      <>
+        <p>This fretboard is your reference while you practise.</p>
+        <p className="mt-2">Learn each triad shape, and pay attention to the notes that make up the chord. Play the notes individually or as a complete chord.</p>
+        <p className="mt-2">The next steps will show you how to change the view and explore different triads.</p>
+      </>
+    ),
+  },
+  {
     targets: ["key-selection-controls"],
     title: "Choose a key",
     description: (
@@ -164,7 +175,7 @@ export function InteractiveTutorial({ activePage, onClose, onShowPractice }: Int
     top: targetRect.top - spotlightPadding,
     width: targetRect.width + spotlightPadding * 2,
   }));
-  const estimatedPopoverHeight = stepIndex === 0 ? 270 : isFinalStep ? 320 : 210;
+  const estimatedPopoverHeight = stepIndex <= 1 ? 270 : isFinalStep ? 320 : 210;
   const popoverStyle = targetRects[0]
     ? getPopoverPosition(targetRects[0], estimatedPopoverHeight)
     : { left: "50%", top: "50%", transform: "translate(-50%, -50%)" };

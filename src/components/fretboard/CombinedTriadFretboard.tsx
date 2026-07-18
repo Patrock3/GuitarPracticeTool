@@ -142,7 +142,7 @@ export function CombinedTriadFretboard({ progression = [], renderMode = "triads"
 
       <div className="px-1 pb-2 sm:px-4">
         <div className="relative ml-7 sm:ml-10">
-          <div className="fretboard relative h-[250px] w-full rounded-r-lg sm:h-[300px]" aria-label={isProgression ? "Chord progression fretboard diagram" : isScaleMode ? `${scaleRoot ?? scaleNotes[0] ?? "Selected"} scale fretboard with ${scaleChordRoot ?? "selected chord"} chord tones highlighted` : `${shapes[0].chord.symbol} fretboard diagram`}>
+          <div className="fretboard relative h-[250px] w-full rounded-r-lg sm:h-[300px]" aria-label={isProgression ? "Chord progression fretboard diagram" : isScaleMode ? `${scaleRoot ?? scaleNotes[0] ?? "Selected"} scale fretboard with ${scaleChordRoot ?? "selected chord"} chord tones highlighted` : `${shapes[0].chord.symbol} fretboard diagram`} data-tutorial-target="main-fretboard">
             <div className="absolute inset-y-0 left-0 z-10 w-[5px] bg-[#302a24] shadow-[2px_0_3px_rgba(0,0,0,0.25)]" aria-hidden="true" />
 
             {Array.from({ length: fretboardFretCount }, (_, index) => index + 1).map((fret) => (
