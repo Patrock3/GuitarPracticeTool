@@ -17,7 +17,7 @@ interface ConceptGroup {
 const welcomeContent = {
   title: "Welcome to Guitar Practice Tool",
   introduction: [
-    "This tool is best suited for intermediate guitarists looking to move beyond open chords and barre chords, and develop a deeper understanding of harmony across the entire fretboard.",
+    "This tool is best suited for intermediate guitarists looking to move beyond basic chords and pentatonics, and develop a deeper understanding of harmony across the entire fretboard.",
     "The interactive fretboard below is the heart of the application. Use it to visualise triad and scale shapes in any key and track your practice over time.",
   ],
   sections: [
@@ -84,11 +84,87 @@ const welcomeContent = {
       ] as ConceptGroup[],
       closing: "Now get practising!",
     },
+    {
+      id: "what-is-harmony",
+      title: "What is Harmony?",
+      groups: [
+        {
+          title: "Sound in Context",
+          description: "Harmony is the way notes sound and function together. It creates colour, tension and resolution around a musical idea.",
+          points: [
+            {
+              label: "Melody:",
+              text: "The line you can sing or hum, usually heard one note at a time.",
+            },
+            {
+              label: "Harmony:",
+              text: "The notes and chords that support that line and shape how it feels.",
+            },
+          ],
+        },
+        {
+          title: "From Scale to Chords",
+          description: "A major scale is more than a sequence of notes. Each scale degree can become the root of a chord using only notes from that key.",
+          points: [
+            {
+              label: "A natural chord family:",
+              text: "Building from each scale degree produces the harmonised major scale: seven related chords with their own roles and character.",
+            },
+            {
+              label: "Shared material:",
+              text: "Because the chords come from the same scale, they connect in ways the ear recognises as movement within one key.",
+            },
+          ],
+        },
+        {
+          title: "Small Shapes, Big Ideas",
+          description: "Triads are the smallest complete major and minor chord sounds, making them practical building blocks for understanding richer harmony.",
+          points: [
+            {
+              label: "Clear structure:",
+              text: "With only three voices, it is easier to hear which notes stay in place and which notes move between chords.",
+            },
+            {
+              label: "Room to grow:",
+              text: "Larger chords add colour to this foundation, so strong triad knowledge makes extended harmony easier to navigate.",
+            },
+          ],
+        },
+        {
+          title: "Why It Matters",
+          points: [
+            {
+              label: "Fretboard knowledge:",
+              text: "Triads reveal chord tones in connected locations instead of isolated shapes.",
+            },
+            {
+              label: "Voice leading:",
+              text: "Nearby shapes help individual notes move smoothly from one chord to the next.",
+            },
+            {
+              label: "Chord progressions:",
+              text: "Seeing shared tones makes common harmonic movement easier to understand and arrange.",
+            },
+            {
+              label: "Improvisation:",
+              text: "Targeting chord tones helps solos follow the harmony rather than simply running through a scale.",
+            },
+          ],
+        },
+      ] as ConceptGroup[],
+      closing: "Listen for these connections in music you already know.",
+    },
   ],
 };
 
 export function WelcomeCard() {
-  const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [expandedSections, setExpandedSections] = useState<string[]>([]);
+
+  function toggleSection(sectionId: string) {
+    setExpandedSections((current) => current.includes(sectionId)
+      ? current.filter((id) => id !== sectionId)
+      : [...current, sectionId]);
+  }
 
   return (
     <section className="rounded-md border border-zinc-200 bg-white p-4 shadow-sm sm:p-5">
@@ -99,16 +175,16 @@ export function WelcomeCard() {
 
       <div className="mt-4 border-t border-zinc-200 pt-2">
         {welcomeContent.sections.map((section) => {
-          const isExpanded = expandedSection === section.id;
+          const isExpanded = expandedSections.includes(section.id);
           const contentId = `${section.id}-content`;
 
           return (
-            <div key={section.id}>
+            <div className="border-b border-zinc-100 last:border-b-0" key={section.id}>
               <button
                 aria-controls={contentId}
                 aria-expanded={isExpanded}
                 className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm font-bold text-zinc-700 transition hover:bg-zinc-50 hover:text-teal-800"
-                onClick={() => setExpandedSection(isExpanded ? null : section.id)}
+                onClick={() => toggleSection(section.id)}
                 type="button"
               >
                 <ChevronRight
