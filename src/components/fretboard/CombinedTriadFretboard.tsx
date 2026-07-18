@@ -23,6 +23,11 @@ interface CombinedTriadFretboardProps {
 const strings: GuitarString[] = [1, 2, 3, 4, 5, 6];
 const positionFrets = [3, 5, 7, 9, 12];
 const progressionColours = ["bg-teal-800", "bg-indigo-700", "bg-rose-700", "bg-amber-700", "bg-sky-700", "bg-violet-700", "bg-emerald-700", "bg-orange-700"];
+const triadLegendLabels = {
+  root: "Root Position",
+  first: "1st Inversion",
+  second: "2nd Inversion",
+};
 
 interface CombinedMarker extends FretMarker {
   shape: TriadShape;
@@ -94,7 +99,7 @@ export function CombinedTriadFretboard({ progression = [], renderMode = "triads"
                 {shapes.map((shape) => (
                     <span className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-500" key={shape.id}>
                       <span className={`h-2.5 w-2.5 rounded-full ${inversionStyles[shape.inversion].marker}`} aria-hidden="true" />
-                      {inversionStyles[shape.inversion].shortLabel}
+                      {triadLegendLabels[shape.inversion]}
                     </span>
                   ))}
               </div>

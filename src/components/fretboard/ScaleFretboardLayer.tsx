@@ -13,9 +13,9 @@ export const scaleChordToneStyles: Array<{
   marker: string;
   tone: ScaleChordTone;
 }> = [
-  { label: "Root", marker: inversionStyles.root.marker, tone: "root" },
-  { label: "3rd", marker: inversionStyles.first.marker, tone: "third" },
-  { label: "5th", marker: inversionStyles.second.marker, tone: "fifth" },
+  { label: "Root Note", marker: inversionStyles.root.marker, tone: "root" },
+  { label: "3rd Note", marker: inversionStyles.first.marker, tone: "third" },
+  { label: "5th Note", marker: inversionStyles.second.marker, tone: "fifth" },
 ];
 
 const scaleChordToneMarkerClasses: Record<ScaleChordTone, string> = {
