@@ -55,7 +55,7 @@ const tutorialSteps: TutorialStep[] = [
       <>
         <p>The same triads can be practised across four adjacent string groups. Change the string group to practise the same chords in different areas of the fretboard.</p>
         <p className="mt-2">Use the <strong className="font-bold text-zinc-800">+1</strong> buttons to record completed repetitions for each inversion.</p>
-        <p className="mt-2">Every repetition is saved automatically so you can review your progress later.</p>
+        <p className="mt-2">Every repetition is saved to the Progress page so you can review your practice counts later.</p>
       </>
     ),
   },
@@ -78,7 +78,6 @@ const tutorialSteps: TutorialStep[] = [
           <li>Switch between the Triads and Scale views</li>
         </ul>
         <p className="mt-3">A good place to start is by choosing one key and working through each chord across all string groups. As you practise, focus on recognising the shapes and the notes that make up each chord.</p>
-        <p className="mt-3">When you're ready, explore the <strong className="font-bold text-zinc-800">Progress Tracker</strong> and <strong className="font-bold text-zinc-800">Chord Progression Builder</strong> to support your practice.</p>
         <p className="mt-3">Enjoy your practice!</p>
       </>
     ),

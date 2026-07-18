@@ -269,7 +269,7 @@ export function WelcomeCard({ onStartTutorial }: WelcomeCardProps) {
             type="button"
           >
             <ChevronRight aria-hidden="true" className="shrink-0" size={17} />
-            Start Interactive Tutorial
+            Start Guided Tutorial
           </button>
         </div>
       </div>
